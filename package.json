@@ -1,25 +1,55 @@
 {
-  "name": "online-assessment",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "react": "^16.8.2",
-    "react-dom": "^16.8.2",
-    "react-scripts": "2.1.5"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+    "name": "online-assessment",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "bootstrap": "^4.3.1",
+        "cross-env": "^5.2.0",
+        "firebase": "^5.8.3",
+        "react": "^16.8.2",
+        "react-dom": "^16.8.2",
+        "react-router-dom": "^4.3.1",
+        "react-scripts": "2.1.5",
+        "reactstrap": "^7.1.0",
+        "recompose": "^0.30.0"
+    },
+    "scripts": {
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "cross-env NODE_ENV=production lint-staged"
+        }
+    },
+    "lint-staged": {
+        "*.{js,jsx}": [
+            "pretty-quick --staged",
+            "eslint src/ --fix",
+            "git add"
+        ]
+    },
+    "eslintConfig": {
+        "extends": "react-app"
+    },
+    "browserslist": [
+        ">0.2%",
+        "not dead",
+        "not ie <= 11",
+        "not op_mini all"
+    ],
+    "devDependencies": {
+        "eslint-config-airbnb": "^17.1.0",
+        "eslint-config-prettier": "^4.0.0",
+        "eslint-plugin-import": "^2.14.0",
+        "eslint-plugin-jsx-a11y": "^6.1.1",
+        "eslint-plugin-prettier": "^3.0.1",
+        "eslint-plugin-react": "^7.11.0",
+        "husky": "^1.3.1",
+        "lint-staged": "^8.1.1",
+        "prettier": "^1.16.1",
+        "pretty-quick": "^1.10.0"
+    }
 }

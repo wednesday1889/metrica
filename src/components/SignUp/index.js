@@ -2,18 +2,31 @@ import React, { Component } from "react";
 import { Link, withRouter } from "react-router-dom";
 import { compose } from "recompose";
 
+import {
+    Alert,
+    Col,
+    Row,
+    Form,
+    FormGroup,
+    Label,
+    Input,
+    Button,
+    FormFeedback
+} from "reactstrap";
+
 import { withFirebase } from "../Firebase";
 import * as ROUTES from "../../constants/routes";
 
 const SignUpPage = () => (
-    <div>
-        <h1>SignUp</h1>
-        <SignUpForm />
-    </div>
+    <Row>
+        <Col sm={{ size: 8, offset: 4 }}>
+            <h2>Register</h2>
+            <SignUpForm />
+        </Col>
+    </Row>
 );
 
 const INITIAL_STATE = {
-    username: "",
     email: "",
     passwordOne: "",
     passwordTwo: "",
@@ -24,7 +37,15 @@ class SignUpFormBase extends Component {
     constructor(props) {
         super(props);
 
-        this.state = { ...INITIAL_STATE };
+        this.state = {
+            ...INITIAL_STATE,
+            email: "",
+            passwordOne: "",
+            passwordTwo: "",
+            validate: {
+                emailState: ""
+            }
+        };
     }
 
     onSubmit = event => {
@@ -47,50 +68,75 @@ class SignUpFormBase extends Component {
         this.setState({ [event.target.name]: event.target.value });
     };
 
+    validateEmail(e) {
+        const emailRex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        const { validate } = this.state;
+        if (emailRex.test(e.target.value)) {
+            validate.emailState = "has-success";
+        } else {
+            validate.emailState = "has-danger";
+        }
+        this.setState({ validate });
+    }
+
     render() {
-        const { username, email, passwordOne, passwordTwo, error } = this.state;
+        const { email, passwordOne, passwordTwo, error, validate } = this.state;
+
         const isInvalid =
             passwordOne !== passwordTwo ||
             passwordOne === "" ||
             email === "" ||
-            username === "";
-
+            validate.emailState === "has-danger";
         return (
-            <form onSubmit={this.onSubmit}>
-                <input
-                    name="username"
-                    value={username}
-                    onChange={this.onChange}
-                    type="text"
-                    placeholder="Full Name"
-                />
-                <input
-                    name="email"
-                    value={email}
-                    onChange={this.onChange}
-                    type="text"
-                    placeholder="Email Address"
-                />
-                <input
-                    name="passwordOne"
-                    value={passwordOne}
-                    onChange={this.onChange}
-                    type="password"
-                    placeholder="Password"
-                />
-                <input
-                    name="passwordTwo"
-                    value={passwordTwo}
-                    onChange={this.onChange}
-                    type="password"
-                    placeholder="Confirm Password"
-                />
-                <button disabled={isInvalid} type="submit">
-                    Sign Up
-                </button>
+            <Form className="form" onSubmit={this.onSubmit}>
+                <Col sm={5}>
+                    <FormGroup>
+                        <Input
+                            type="email"
+                            name="email"
+                            id="email"
+                            placeholder="youremail@domain.com"
+                            value={email}
+                            valid={validate.emailState === "has-success"}
+                            invalid={validate.emailState === "has-danger"}
+                            onChange={e => {
+                                this.validateEmail(e);
+                                this.onChange(e);
+                            }}
+                        />
+                        <FormFeedback valid>Email is valid</FormFeedback>
+                        <FormFeedback>
+                            Uh oh! Looks like there is an issue with your email.
+                            Please input a correct email.
+                        </FormFeedback>
+                        <Label>Password</Label>
+                        <Input
+                            name="passwordOne"
+                            value={passwordOne}
+                            onChange={this.onChange}
+                            type="password"
+                            placeholder="********"
+                        />
+                        <Label>Confirm Password</Label>
+                        <Input
+                            name="passwordTwo"
+                            value={passwordTwo}
+                            onChange={this.onChange}
+                            type="password"
+                            placeholder="********"
+                        />
+                    </FormGroup>
+                    <Button disabled={isInvalid} type="submit">
+                        Register
+                    </Button>
 
-                {error && <p>{error.message}</p>}
-            </form>
+                    {error && (
+                        <Alert className="mt-2" color="danger">
+                            {error.message}
+                        </Alert>
+                    )}
+                </Col>
+            </Form>
         );
     }
 }

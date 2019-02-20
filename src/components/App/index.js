@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Route } from "react-router-dom";
 
-import { Container, Row, Col } from "reactstrap";
+import { Container } from "reactstrap";
 
 import Navigation from "../Navigation";
 import LandingPage from "../Landing";
@@ -17,13 +17,8 @@ import { withAuthentication } from "../Session";
 
 const App = () => (
     <Router>
-        <Container>
-            <Row>
-                <Col>
-                    <Navigation />
-                </Col>
-            </Row>
-
+        <Container fluid>
+            <Navigation />
             <Route exact path={ROUTES.LANDING} component={LandingPage} />
             <Route path={ROUTES.SIGN_UP} component={SignUpPage} />
             <Route path={ROUTES.SIGN_IN} component={SignInPage} />

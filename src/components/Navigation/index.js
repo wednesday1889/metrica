@@ -50,7 +50,7 @@ class NavigationAuth extends Component {
         return (
             <Navbar color="faded" light expand="md">
                 <NavbarBrand tag={Link} to={ROUTES.LANDING}>
-                    Landing
+                    Online Assessment
                 </NavbarBrand>
                 <NavbarToggler onClick={this.toggle} />
                 <Collapse isOpen={isOpen} navbar>

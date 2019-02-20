@@ -5,10 +5,10 @@ import {
     Collapse,
     Navbar,
     // NavbarToggler,
-    NavbarBrand
-    // Nav,
-    // NavItem,
-    // NavLink
+    NavbarBrand,
+    Nav,
+    NavItem,
+    NavLink
 } from "reactstrap";
 
 import SignOutButton from "../SignOut";
@@ -58,14 +58,22 @@ class NavigationAuth extends React.Component {
 }
 
 const NavigationNonAuth = () => (
-    <Navbar>
-        <NavbarBrand>
-            <Link to={ROUTES.LANDING}>Landing</Link>
-        </NavbarBrand>
-        <Collapse navbar>
-            <Link to={ROUTES.SIGN_IN}>Sign In</Link>
-        </Collapse>
-    </Navbar>
+    <div>
+        <Navbar color="faded" light expand="md">
+            <NavbarBrand>
+                <Link to={ROUTES.LANDING}>Landing</Link>
+            </NavbarBrand>
+            <Collapse isOpen="true" navbar>
+                <Nav className="ml-auto" navbar>
+                    <NavItem>
+                        <NavLink>
+                            <Link to={ROUTES.SIGN_IN}>Sign In</Link>
+                        </NavLink>
+                    </NavItem>
+                </Nav>
+            </Collapse>
+        </Navbar>
+    </div>
 );
 
 export default Navigation;

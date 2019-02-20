@@ -63,10 +63,11 @@ class SignUpFormBase extends Component {
                         lastName: "",
                         profileDone: false,
                         examCode: "",
-                        dateCreated: new Date()
+                        dateCreated: new Date(),
+                        roles: []
                     });
                 this.setState({ ...INITIAL_STATE });
-                history.push(ROUTES.HOME);
+                history.push(ROUTES.ACCOUNT);
             })
             .catch(error => {
                 this.setState({ error });

@@ -2,15 +2,20 @@ import React from "react";
 
 import { Row, Col } from "reactstrap";
 
-import { withAuthorization } from "../Session";
+import { AuthUserContext, withAuthorization } from "../Session";
 
 const HomePage = () => (
-    <Row>
-        <Col sm={{ size: 8, offset: 4 }}>
-            <h2>Home</h2>
-            <p>Only logged in users will see this</p>
-        </Col>
-    </Row>
+    <AuthUserContext.Consumer>
+        {authUser => (
+            <Row>
+                <Col sm={{ size: 8, offset: 4 }}>
+                    <h2>Home</h2>
+                    {authUser.profileDone && <p>Profile is complete</p>}
+                    {!authUser.profileDone && <p>Profile not yet complete</p>}
+                </Col>
+            </Row>
+        )}
+    </AuthUserContext.Consumer>
 );
 
 const condition = authUser => !!authUser;

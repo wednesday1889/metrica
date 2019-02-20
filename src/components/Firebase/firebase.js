@@ -19,6 +19,35 @@ class Firebase {
         this.db = app.firestore();
     }
 
+    onAuthUserListener = (next, fallback) => {
+        const _self = this;
+        this.auth.onAuthStateChanged(authUser => {
+            if (authUser) {
+                _self
+                    .user(authUser.uid)
+                    .get()
+                    .then(doc => {
+                        const dbUser = doc.data();
+
+                        // default empty roles
+                        if (!dbUser.roles) {
+                            dbUser.roles = [];
+                        }
+
+                        // merge auth and db user
+                        const authUserMerged = {
+                            uid: authUser.uid,
+                            email: authUser.email,
+                            ...dbUser
+                        };
+
+                        next(authUserMerged);
+                    });
+            } else {
+                fallback();
+            }
+        });
+    };
     // *** Auth API ***
 
     doCreateUserWithEmailAndPassword = (email, password) =>

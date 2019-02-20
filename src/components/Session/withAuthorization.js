@@ -10,15 +10,20 @@ const withAuthorization = condition => Component => {
     class WithAuthorization extends React.Component {
         componentDidMount() {
             const { firebase, history } = this.props;
-            this.listener = firebase.auth.onAuthStateChanged(authUser => {
-                if (!condition(authUser)) {
-                    history.push(ROUTES.SIGN_IN);
-                }
-            });
+            this.listener = firebase.onAuthUserListener(
+                authUser => {
+                    if (!condition(authUser)) {
+                        history.push(ROUTES.SIGN_IN);
+                    }
+                },
+                () => history.push(ROUTES.SIGN_IN)
+            );
         }
 
         componentWillUnmount() {
-            this.listener();
+            if (this.listener) {
+                this.listener();
+            }
         }
 
         render() {

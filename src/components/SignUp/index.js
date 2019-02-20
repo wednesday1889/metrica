@@ -53,7 +53,18 @@ class SignUpFormBase extends Component {
         const { firebase, history } = this.props;
         firebase
             .doCreateUserWithEmailAndPassword(email, passwordOne)
-            .then(() => {
+            .then(auth => {
+                firebase
+                    .users()
+                    .doc(auth.user.uid)
+                    .set({
+                        email: auth.user.email,
+                        firstName: "",
+                        lastName: "",
+                        profileDone: false,
+                        examCode: "",
+                        dateCreated: new Date()
+                    });
                 this.setState({ ...INITIAL_STATE });
                 history.push(ROUTES.HOME);
             })

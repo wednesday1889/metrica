@@ -1,14 +1,18 @@
-import React from "react";
+import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
 import {
     Collapse,
     Navbar,
-    // NavbarToggler,
+    NavbarToggler,
     NavbarBrand,
     Nav,
     NavItem,
-    NavLink
+    NavLink,
+    UncontrolledDropdown,
+    DropdownToggle,
+    DropdownMenu,
+    DropdownItem
 } from "reactstrap";
 
 import SignOutButton from "../SignOut";
@@ -18,62 +22,75 @@ import { AuthUserContext } from "../Session";
 const Navigation = () => (
     <div>
         <AuthUserContext.Consumer>
-            {authUser =>
-                authUser ? <NavigationAuth /> : <NavigationNonAuth />
-            }
+            {authUser => <NavigationAuth authUser={authUser} />}
         </AuthUserContext.Consumer>
     </div>
 );
 
-class NavigationAuth extends React.Component {
+class NavigationAuth extends Component {
     constructor(props) {
         super(props);
+
         this.toggle = this.toggle.bind(this);
         this.state = {
             isOpen: false
         };
     }
 
+    toggle() {
+        const { isOpen } = this.state;
+        this.setState({
+            isOpen: !isOpen
+        });
+    }
+
     render() {
         const { isOpen } = this.state;
+        const { authUser } = this.props;
         return (
-            <Navbar color="light" light expand="md">
-                <NavbarBrand>
-                    <Link to={ROUTES.LANDING}>Landing</Link>
+            <Navbar color="faded" light expand="md">
+                <NavbarBrand tag={Link} to={ROUTES.LANDING}>
+                    Landing
                 </NavbarBrand>
-                <Collapse isOpen={isOpen}>
-                    <li>
-                        <Link to={ROUTES.HOME}>Home</Link>
-                    </li>
-                    <li>
-                        <Link to={ROUTES.ACCOUNT}>Account</Link>
-                    </li>
-                    <li>
-                        <SignOutButton />
-                    </li>
+                <NavbarToggler onClick={this.toggle} />
+                <Collapse isOpen={isOpen} navbar>
+                    {authUser && (
+                        <Nav className="ml-auto" navbar>
+                            <NavItem>
+                                <NavLink tag={Link} to={ROUTES.HOME}>
+                                    Home
+                                </NavLink>
+                            </NavItem>
+                            <UncontrolledDropdown nav inNavbar>
+                                <DropdownToggle nav caret>
+                                    Account
+                                </DropdownToggle>
+                                <DropdownMenu right>
+                                    <DropdownItem
+                                        tag={Link}
+                                        to={ROUTES.ACCOUNT}
+                                    >
+                                        Manage
+                                    </DropdownItem>
+                                    <DropdownItem divider />
+                                    <SignOutButton />
+                                </DropdownMenu>
+                            </UncontrolledDropdown>
+                        </Nav>
+                    )}
+                    {!authUser && (
+                        <Nav className="ml-auto" navbar>
+                            <NavItem>
+                                <NavLink tag={Link} to={ROUTES.SIGN_IN}>
+                                    Sign In
+                                </NavLink>
+                            </NavItem>
+                        </Nav>
+                    )}
                 </Collapse>
             </Navbar>
         );
     }
 }
-
-const NavigationNonAuth = () => (
-    <div>
-        <Navbar color="faded" light expand="md">
-            <NavbarBrand>
-                <Link to={ROUTES.LANDING}>Landing</Link>
-            </NavbarBrand>
-            <Collapse isOpen="true" navbar>
-                <Nav className="ml-auto" navbar>
-                    <NavItem>
-                        <NavLink>
-                            <Link to={ROUTES.SIGN_IN}>Sign In</Link>
-                        </NavLink>
-                    </NavItem>
-                </Nav>
-            </Collapse>
-        </Navbar>
-    </div>
-);
 
 export default Navigation;

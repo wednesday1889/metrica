@@ -1,9 +1,12 @@
 import React from "react";
+import { Container, Col, Row } from "reactstrap";
 
 const App = () => (
-    <div>
-        <h1>Landing</h1>
-    </div>
+    <Container>
+        <Col>
+            <Row>This is a landing page</Row>
+        </Col>
+    </Container>
 );
 
 export default App;

@@ -28,13 +28,32 @@ const AccountPage = props => (
 class AccountForm extends Component {
     constructor(props) {
         super(props);
-        const { authUser } = this.props;
+        // const { authUser } = this.props;
         this.state = {
-            email: authUser.email,
-            firstName: authUser.firstName,
-            lastName: authUser.lastName,
-            examCode: authUser.examCode
+            firstName: "",
+            lastName: "",
+            examCode: "",
+            loading: true
         };
+    }
+
+    componentDidMount() {
+        const { firebase } = this.props;
+
+        this.setState({ loading: true });
+        this.unsubscribe = firebase
+            .user(firebase.auth.currentUser.uid)
+            .onSnapshot(snapshot => {
+                const user = snapshot.data();
+                this.setState({
+                    loading: false,
+                    ...user
+                });
+            });
+    }
+
+    componentWillUnmount() {
+        this.unsubscribe();
     }
 
     onSubmit = event => {
@@ -42,12 +61,17 @@ class AccountForm extends Component {
         const { firebase, authUser, history } = this.props;
         firebase
             .user(authUser.uid)
-            .set({
-                firstName,
-                lastName,
-                examCode,
-                profileDone: true
-            })
+            .set(
+                {
+                    firstName,
+                    lastName,
+                    examCode,
+                    profileDone: true
+                },
+                {
+                    merge: true
+                }
+            )
             .then(() => {
                 history.push(ROUTES.HOME);
             });
@@ -59,7 +83,12 @@ class AccountForm extends Component {
     };
 
     render() {
-        const { email, firstName, lastName, examCode } = this.state;
+        const { email, firstName, lastName, examCode, loading } = this.state;
+
+        if (loading) {
+            return <h1>loading</h1>;
+        }
+
         const isInvalid =
             email === "" ||
             firstName === "" ||

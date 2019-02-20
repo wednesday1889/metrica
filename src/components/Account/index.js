@@ -1,12 +1,18 @@
 import React from "react";
 
+import { Row, Col } from "reactstrap";
+
 import { PasswordForgetForm } from "../PasswordForget";
+import { withAuthorization } from "../Session";
 
 const AccountPage = () => (
-    <div>
-        <h1>Account Page</h1>
-        <PasswordForgetForm />
-    </div>
+    <Row>
+        <Col sm={{ size: 8, offset: 4 }}>
+            <h2>My Account</h2>
+            <PasswordForgetForm />
+        </Col>
+    </Row>
 );
+const condition = authUser => !!authUser;
 
-export default AccountPage;
+export default withAuthorization(condition)(AccountPage);

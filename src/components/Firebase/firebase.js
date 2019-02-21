@@ -1,6 +1,7 @@
 import app from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
+import "firebase/functions";
 
 const config = {
     apiKey: process.env.REACT_APP_API_KEY,
@@ -17,6 +18,7 @@ class Firebase {
 
         this.auth = app.auth();
         this.db = app.firestore();
+        this.functions = app.functions();
     }
 
     onAuthUserListener = (next, fallback) => {
@@ -78,6 +80,8 @@ class Firebase {
     users = () => this.db.collection("users");
 
     candidateStatus = email => this.db.collection("candidatestatus").doc(email);
+
+    saveProfile = () => this.functions.httpsCallable("saveProfile");
 }
 
 export default Firebase;

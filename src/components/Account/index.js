@@ -2,7 +2,16 @@ import React, { Component } from "react";
 import { compose } from "recompose";
 import { withRouter } from "react-router-dom";
 
-import { Row, Col, Form, FormGroup, Input, Label, Button } from "reactstrap";
+import {
+    Row,
+    Col,
+    Form,
+    FormGroup,
+    Input,
+    Label,
+    Button,
+    Alert
+} from "reactstrap";
 
 import { AuthUserContext, withAuthorization } from "../Session";
 import { withFirebase } from "../Firebase";
@@ -33,7 +42,8 @@ class AccountForm extends Component {
             firstName: "",
             lastName: "",
             examCode: "",
-            loading: true
+            loading: true,
+            isError: false
         };
     }
 
@@ -57,24 +67,24 @@ class AccountForm extends Component {
     }
 
     onSubmit = event => {
-        const { firstName, lastName, examCode } = this.state;
-        const { firebase, authUser, history } = this.props;
-        firebase
-            .user(authUser.uid)
-            .set(
-                {
-                    firstName,
-                    lastName,
-                    examCode,
-                    profileDone: true
-                },
-                {
-                    merge: true
-                }
-            )
+        const { email, firstName, lastName, examCode } = this.state;
+        const { firebase, history } = this.props;
+
+        const saveProfileFunc = firebase.saveProfile();
+
+        saveProfileFunc({
+            email,
+            firstName,
+            lastName,
+            examCode
+        })
             .then(() => {
                 history.push(ROUTES.HOME);
+            })
+            .catch(error => {
+                this.setState({ isError: error.details.message });
             });
+
         event.preventDefault();
     };
 
@@ -83,7 +93,14 @@ class AccountForm extends Component {
     };
 
     render() {
-        const { email, firstName, lastName, examCode, loading } = this.state;
+        const {
+            email,
+            firstName,
+            lastName,
+            examCode,
+            loading,
+            isError
+        } = this.state;
 
         if (loading) {
             return <h1>loading</h1>;
@@ -137,6 +154,11 @@ class AccountForm extends Component {
                     <Button disabled={isInvalid} type="submit" block>
                         Update Profile
                     </Button>
+                    {isError && (
+                        <Alert className="mt-2" color="danger">
+                            {isError}
+                        </Alert>
+                    )}
                 </Col>
             </Form>
         );

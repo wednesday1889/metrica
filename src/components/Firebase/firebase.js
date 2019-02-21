@@ -35,13 +35,23 @@ class Firebase {
                         }
 
                         // merge auth and db user
-                        const authUserMerged = {
+                        const authUserMergedWithAuth = {
                             uid: authUser.uid,
                             email: authUser.email,
                             ...dbUser
                         };
 
-                        next(authUserMerged);
+                        _self
+                            .candidateStatus(authUser.email)
+                            .get()
+                            .then(candDoc => {
+                                const candidateStatus = candDoc.data();
+                                const authUserMergedWithCandidate = {
+                                    ...authUserMergedWithAuth,
+                                    ...candidateStatus
+                                };
+                                next(authUserMergedWithCandidate);
+                            });
                     });
             } else {
                 fallback();
@@ -66,6 +76,8 @@ class Firebase {
     user = uid => this.db.collection("users").doc(uid);
 
     users = () => this.db.collection("users");
+
+    candidateStatus = email => this.db.collection("candidatestatus").doc(email);
 }
 
 export default Firebase;

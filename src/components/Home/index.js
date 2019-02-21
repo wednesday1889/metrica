@@ -27,7 +27,7 @@ class HomePage extends Component {
         const { firebase } = this.props;
 
         this.setState({ loading: true });
-        this.unsubscribe = firebase
+        this.unsubscribeUser = firebase
             .user(firebase.auth.currentUser.uid)
             .onSnapshot(snapshot => {
                 const user = snapshot.data();
@@ -36,10 +36,20 @@ class HomePage extends Component {
                     loading: false
                 });
             });
+        this.unsubscribeCandidate = firebase
+            .candidateStatus(firebase.auth.currentUser.email)
+            .onSnapshot(snapshot => {
+                const candStatus = snapshot.data();
+                this.setState({
+                    ...candStatus,
+                    loading: false
+                });
+            });
     }
 
     componentWillUnmount() {
-        this.unsubscribe();
+        this.unsubscribeUser();
+        this.unsubscribeCandidate();
     }
 
     render() {

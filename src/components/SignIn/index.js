@@ -21,7 +21,7 @@ import * as ROUTES from "../../constants/routes";
 
 const SignInPage = () => (
     <Row>
-        <Col sm={{ size: 8, offset: 4 }}>
+        <Col sm={{ size: 8, offset: 3 }}>
             <h2>Login</h2>
             <SignInForm />
             <Col sm={5}>

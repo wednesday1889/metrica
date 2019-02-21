@@ -1,8 +1,15 @@
 import React, { Component } from "react";
 import { compose } from "recompose";
 
+import { Container, Row, Col } from "reactstrap";
+
 import { withAuthorization } from "../Session";
 import { withFirebase } from "../Firebase";
+
+import IncompleteProfileCard from "./incompleteProfile";
+import CompleteProfileCard from "./completeProfile";
+import JavascriptExamCard from "./javascriptCard";
+import JavaExamCard from "./javaCard";
 
 class HomePage extends Component {
     constructor(props) {
@@ -10,7 +17,9 @@ class HomePage extends Component {
 
         this.state = {
             loading: true,
-            user: null
+            email: "",
+            firstName: "",
+            profileDone: false
         };
     }
 
@@ -21,8 +30,9 @@ class HomePage extends Component {
         this.unsubscribe = firebase
             .user(firebase.auth.currentUser.uid)
             .onSnapshot(snapshot => {
+                const user = snapshot.data();
                 this.setState({
-                    user: snapshot.data(),
+                    ...user,
                     loading: false
                 });
             });
@@ -33,21 +43,39 @@ class HomePage extends Component {
     }
 
     render() {
-        const { user, loading } = this.state;
+        const { email, firstName, loading, profileDone } = this.state;
         return (
-            <div>
-                {!loading && (
+            <Container>
+                {!loading && !profileDone && (
+                    <Row>
+                        <Col sm="12" md={{ size: 6, offset: 3 }}>
+                            <IncompleteProfileCard email={email} />
+                        </Col>
+                    </Row>
+                )}
+                {!loading && profileDone && (
                     <div>
-                        <h1>Home Page</h1>
-                        <p>
-                            The Home Page is accessible by every signed in user.
-                            {user.email}
-                            {user.firstName}
-                            {user.lastName}
-                        </p>
+                        <Row>
+                            <Col sm="12" md={{ size: 6, offset: 3 }}>
+                                <CompleteProfileCard firstName={firstName} />
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col md={{ size: 3, offset: 3 }}>
+                                <JavascriptExamCard />
+                            </Col>
+                            <Col md={{ size: 3 }}>
+                                <JavaExamCard />
+                            </Col>
+                        </Row>
                     </div>
                 )}
-            </div>
+                {loading && (
+                    <div>
+                        <h1>Loading</h1>
+                    </div>
+                )}
+            </Container>
         );
     }
 }

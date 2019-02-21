@@ -19,7 +19,7 @@ import * as ROUTES from "../../constants/routes";
 
 const SignUpPage = () => (
     <Row>
-        <Col sm={{ size: 8, offset: 4 }}>
+        <Col sm={{ size: 8, offset: 3 }}>
             <h2>Register</h2>
             <SignUpForm />
         </Col>

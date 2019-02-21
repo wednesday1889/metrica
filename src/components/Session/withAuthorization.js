@@ -13,7 +13,8 @@ const withAuthorization = condition => Component => {
             this.listener = firebase.onAuthUserListener(
                 authUser => {
                     if (!condition(authUser)) {
-                        history.push(ROUTES.SIGN_IN);
+                        // since authUser is not null, then user is probably not profileDone yet. Go back to HOME
+                        history.push(ROUTES.HOME);
                     }
                 },
                 () => history.push(ROUTES.SIGN_IN)

@@ -10,7 +10,8 @@ import {
     CardHeader,
     CardBody,
     Label,
-    Input
+    Input,
+    FormGroup
 } from "reactstrap";
 
 import { withAuthorization } from "../Session";
@@ -19,8 +20,8 @@ import { withFirebase } from "../Firebase";
 const INITIAL_STATE = {
     mcquestions: [
         {
-            quid: "1",
-            index: "1",
+            uid: "1",
+            index: 1,
             questionText: "What is life?",
             options: ["option1", "option2", "option3", "option4", "option5"],
             answer: "",
@@ -28,7 +29,7 @@ const INITIAL_STATE = {
         },
         {
             uid: "2",
-            index: "2",
+            index: 2,
             questionText: "What is zero?",
             options: ["option1", "option2", "option3", "option4", "option5"],
             answer: "",
@@ -38,18 +39,18 @@ const INITIAL_STATE = {
     progchallenges: [
         {
             uid: "3",
-            index: "3",
+            index: 3,
             challenge: "question11",
             answer: ""
         },
         {
             uid: "4",
-            index: "4",
+            index: 4,
             challenge: "question21",
             answer: ""
         }
     ],
-    currentQuestionIndex: -1
+    currentQuestionIndex: 1
 };
 
 class JavascriptExamPage extends Component {
@@ -57,8 +58,8 @@ class JavascriptExamPage extends Component {
         super(props);
 
         this.state = {
-            ...INITIAL_STATE,
-            loading: true
+            ...INITIAL_STATE
+            // loading: true
         };
     }
 
@@ -83,28 +84,69 @@ class JavascriptExamPage extends Component {
         // this.unsubscribe();
     }
 
+    onUpdateItem = (i, value) => {
+        this.setState(state => {
+            const mcquestions = state.mcquestions.map((item, j) => {
+                if (j === i) {
+                    const updatedItem = Object.assign({}, item);
+                    updatedItem.answer = value;
+                    return updatedItem;
+                }
+                return item;
+            });
+            return {
+                mcquestions
+            };
+        });
+    };
+
     submitAnswer() {
-        console.log("here", this.state);
+        this.setState(prevState => ({
+            currentQuestionIndex: prevState.currentQuestionIndex + 1
+        }));
     }
 
     renderMCQuestions() {
-        const { mcquestions } = this.state;
-        const cardsOfQuestions = mcquestions.map(question => {
+        const { mcquestions, currentQuestionIndex } = this.state;
+        const cardsOfQuestions = mcquestions.map((question, index) => {
             const { uid, options } = question;
             const radioButtons = [1, 2, 3, 4, 5].map(option => {
                 const optionStrId = `${uid}-option${option}`;
+                const radioGroupId = `radio-group-${uid}`;
                 return (
                     <div>
-                        <Input type="radio" id={optionStrId} />
+                        <Input
+                            type="radio"
+                            name={radioGroupId}
+                            value={option}
+                            id={optionStrId}
+                            onChange={() =>
+                                this.onUpdateItem(index, options[option - 1])
+                            }
+                        />
                         <Label for={optionStrId}>{options[option - 1]}</Label>
                     </div>
                 );
             });
 
             return (
-                <Card>
-                    <CardHeader>{question.questionText}</CardHeader>
-                    <CardBody>{radioButtons}</CardBody>
+                <Card
+                    className={
+                        question.index === currentQuestionIndex
+                            ? "show"
+                            : "hide"
+                    }
+                >
+                    <CardHeader>Question #{question.index}</CardHeader>
+                    <CardBody>
+                        <Card>
+                            <CardBody>This is a question</CardBody>
+                        </Card>
+                        <FormGroup className="ml-4 mt-4">
+                            {radioButtons}
+                        </FormGroup>
+                        <Label>Your answer is: {question.answer}</Label>
+                    </CardBody>
                 </Card>
             );
         });
@@ -127,7 +169,7 @@ class JavascriptExamPage extends Component {
                         <Button
                             className="mt-4"
                             block
-                            onClick={this.submitAnswer}
+                            onClick={() => this.submitAnswer()}
                         >
                             Submit Answer
                         </Button>

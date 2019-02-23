@@ -32,3 +32,11 @@ code {
 .text-azure {
     color: #13a3f7 !important;
 }
+
+.show {
+    display: block;
+}
+
+.hide {
+    display: none;
+}

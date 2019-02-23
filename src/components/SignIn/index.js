@@ -3,6 +3,7 @@ import { withRouter } from "react-router-dom";
 import { compose } from "recompose";
 
 import {
+    Container,
     Alert,
     Col,
     Row,
@@ -11,7 +12,10 @@ import {
     Label,
     Input,
     Button,
-    FormFeedback
+    FormFeedback,
+    Card,
+    CardBody,
+    CardHeader
 } from "reactstrap";
 
 import { SignUpLink } from "../SignUp";
@@ -20,18 +24,20 @@ import { withFirebase } from "../Firebase";
 import * as ROUTES from "../../constants/routes";
 
 const SignInPage = () => (
-    <Row>
-        <Col sm={{ size: 8, offset: 3 }}>
-            <h2>Login</h2>
-            <SignInForm />
-            <Col sm={5}>
-                <PasswordForgetLink />
+    <Container>
+        <Row>
+            <Col lg={{ size: 6, offset: 3 }} md={{ size: 6, offset: 3 }}>
+                <Card>
+                    <CardHeader>Login</CardHeader>
+                    <CardBody>
+                        <SignInForm />
+                        <PasswordForgetLink />
+                        <SignUpLink />
+                    </CardBody>
+                </Card>
             </Col>
-            <Col sm={5}>
-                <SignUpLink />
-            </Col>
-        </Col>
-    </Row>
+        </Row>
+    </Container>
 );
 
 const INITIAL_STATE = {
@@ -95,50 +101,48 @@ class SignInFormBase extends Component {
 
         return (
             <Form className="form" onSubmit={this.onSubmit}>
-                <Col sm={5}>
-                    <FormGroup>
-                        <Label>Email</Label>
-                        <Input
-                            type="email"
-                            name="email"
-                            id="email"
-                            placeholder="youremail@domain.com"
-                            value={email}
-                            valid={validate.emailState === "has-success"}
-                            invalid={validate.emailState === "has-danger"}
-                            onChange={e => {
-                                this.validateEmail(e);
-                                this.onChange(e);
-                            }}
-                        />
-                        <FormFeedback valid>Email is valid</FormFeedback>
-                        <FormFeedback>
-                            Uh oh! Looks like there is an issue with your email.
-                            Please input a correct email.
-                        </FormFeedback>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label>Password</Label>
-                        <Input
-                            type="password"
-                            name="password"
-                            id="password"
-                            placeholder="********"
-                            value={password}
-                            onChange={this.onChange}
-                        />
-                    </FormGroup>
-                    <Button disabled={isInvalid} type="submit" block>
-                        Login
-                    </Button>
-                    <FormGroup>
-                        {error && (
-                            <Alert className="mt-2" color="danger">
-                                {error.message}
-                            </Alert>
-                        )}
-                    </FormGroup>
-                </Col>
+                <FormGroup>
+                    <Label>Email</Label>
+                    <Input
+                        type="email"
+                        name="email"
+                        id="email"
+                        placeholder="youremail@domain.com"
+                        value={email}
+                        valid={validate.emailState === "has-success"}
+                        invalid={validate.emailState === "has-danger"}
+                        onChange={e => {
+                            this.validateEmail(e);
+                            this.onChange(e);
+                        }}
+                    />
+                    <FormFeedback valid>Email is valid</FormFeedback>
+                    <FormFeedback>
+                        Uh oh! Looks like there is an issue with your email.
+                        Please input a correct email.
+                    </FormFeedback>
+                </FormGroup>
+                <FormGroup>
+                    <Label>Password</Label>
+                    <Input
+                        type="password"
+                        name="password"
+                        id="password"
+                        placeholder="********"
+                        value={password}
+                        onChange={this.onChange}
+                    />
+                </FormGroup>
+                <Button disabled={isInvalid} type="submit" block>
+                    Login
+                </Button>
+                <FormGroup>
+                    {error && (
+                        <Alert className="mt-2" color="danger">
+                            {error.message}
+                        </Alert>
+                    )}
+                </FormGroup>
             </Form>
         );
     }

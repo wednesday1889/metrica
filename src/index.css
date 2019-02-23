@@ -20,3 +20,15 @@ code {
     width: 128px;
     margin: auto;
 }
+
+.bg-emerald {
+    background-color: #2db329 !important;
+}
+
+.bg-azure {
+    background-color: #13a3f7 !important;
+}
+
+.text-azure {
+    color: #13a3f7 !important;
+}

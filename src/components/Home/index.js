@@ -58,7 +58,7 @@ class HomePage extends Component {
             <Container>
                 {!loading && !profileDone && (
                     <Row>
-                        <Col sm="12" md={{ size: 6, offset: 3 }}>
+                        <Col md={{ size: 8, offset: 2 }}>
                             <IncompleteProfileCard email={email} />
                         </Col>
                     </Row>
@@ -66,15 +66,15 @@ class HomePage extends Component {
                 {!loading && profileDone && (
                     <div>
                         <Row>
-                            <Col sm="12" md={{ size: 6, offset: 3 }}>
+                            <Col lg={{ size: 8, offset: 2 }}>
                                 <CompleteProfileCard firstName={firstName} />
                             </Col>
                         </Row>
                         <Row>
-                            <Col md={{ size: 3, offset: 3 }}>
+                            <Col lg={{ size: 4, offset: 2 }} md={{ size: 6 }}>
                                 <JavascriptExamCard />
                             </Col>
-                            <Col md={{ size: 3 }}>
+                            <Col lg={{ size: 4 }} md={{ size: 6 }}>
                                 <JavaExamCard />
                             </Col>
                         </Row>

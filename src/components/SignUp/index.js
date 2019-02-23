@@ -11,19 +11,29 @@ import {
     Label,
     Input,
     Button,
-    FormFeedback
+    FormFeedback,
+    Container,
+    Card,
+    CardHeader,
+    CardBody
 } from "reactstrap";
 
 import { withFirebase } from "../Firebase";
 import * as ROUTES from "../../constants/routes";
 
 const SignUpPage = () => (
-    <Row>
-        <Col sm={{ size: 8, offset: 3 }}>
-            <h2>Register</h2>
-            <SignUpForm />
-        </Col>
-    </Row>
+    <Container>
+        <Row>
+            <Col lg={{ size: 6, offset: 3 }} md={{ size: 6, offset: 3 }}>
+                <Card>
+                    <CardHeader>Register</CardHeader>
+                    <CardBody>
+                        <SignUpForm />
+                    </CardBody>
+                </Card>
+            </Col>
+        </Row>
+    </Container>
 );
 
 const INITIAL_STATE = {
@@ -101,53 +111,51 @@ class SignUpFormBase extends Component {
             validate.emailState === "has-danger";
         return (
             <Form className="form" onSubmit={this.onSubmit}>
-                <Col sm={5}>
-                    <FormGroup>
-                        <Input
-                            type="email"
-                            name="email"
-                            id="email"
-                            placeholder="youremail@domain.com"
-                            value={email}
-                            valid={validate.emailState === "has-success"}
-                            invalid={validate.emailState === "has-danger"}
-                            onChange={e => {
-                                this.validateEmail(e);
-                                this.onChange(e);
-                            }}
-                        />
-                        <FormFeedback valid>Email is valid</FormFeedback>
-                        <FormFeedback>
-                            Uh oh! Looks like there is an issue with your email.
-                            Please input a correct email.
-                        </FormFeedback>
-                        <Label>Password</Label>
-                        <Input
-                            name="passwordOne"
-                            value={passwordOne}
-                            onChange={this.onChange}
-                            type="password"
-                            placeholder="********"
-                        />
-                        <Label>Confirm Password</Label>
-                        <Input
-                            name="passwordTwo"
-                            value={passwordTwo}
-                            onChange={this.onChange}
-                            type="password"
-                            placeholder="********"
-                        />
-                    </FormGroup>
-                    <Button disabled={isInvalid} type="submit">
-                        Register
-                    </Button>
+                <FormGroup>
+                    <Input
+                        type="email"
+                        name="email"
+                        id="email"
+                        placeholder="youremail@domain.com"
+                        value={email}
+                        valid={validate.emailState === "has-success"}
+                        invalid={validate.emailState === "has-danger"}
+                        onChange={e => {
+                            this.validateEmail(e);
+                            this.onChange(e);
+                        }}
+                    />
+                    <FormFeedback valid>Email is valid</FormFeedback>
+                    <FormFeedback>
+                        Uh oh! Looks like there is an issue with your email.
+                        Please input a correct email.
+                    </FormFeedback>
+                    <Label>Password</Label>
+                    <Input
+                        name="passwordOne"
+                        value={passwordOne}
+                        onChange={this.onChange}
+                        type="password"
+                        placeholder="********"
+                    />
+                    <Label>Confirm Password</Label>
+                    <Input
+                        name="passwordTwo"
+                        value={passwordTwo}
+                        onChange={this.onChange}
+                        type="password"
+                        placeholder="********"
+                    />
+                </FormGroup>
+                <Button disabled={isInvalid} type="submit" block>
+                    Register
+                </Button>
 
-                    {error && (
-                        <Alert className="mt-2" color="danger">
-                            {error.message}
-                        </Alert>
-                    )}
-                </Col>
+                {error && (
+                    <Alert className="mt-2" color="danger">
+                        {error.message}
+                    </Alert>
+                )}
             </Form>
         );
     }

@@ -49,7 +49,11 @@ class NavigationAuth extends Component {
         const { authUser } = this.props;
         return (
             <Navbar color="faded" light expand="md">
-                <NavbarBrand tag={Link} to={ROUTES.LANDING}>
+                <NavbarBrand
+                    className="text-azure strong"
+                    tag={Link}
+                    to={ROUTES.LANDING}
+                >
                     Online Assessment
                 </NavbarBrand>
                 <NavbarToggler onClick={this.toggle} />

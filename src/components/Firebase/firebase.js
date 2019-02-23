@@ -81,6 +81,8 @@ class Firebase {
 
     candidateStatus = email => this.db.collection("candidatestatus").doc(email);
 
+    // google cloud functions
+
     saveProfile = () => this.functions.httpsCallable("saveProfile");
 }
 

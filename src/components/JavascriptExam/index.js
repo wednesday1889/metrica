@@ -9,10 +9,14 @@ import {
     Card,
     CardHeader,
     CardBody,
+    CardTitle,
     Label,
     Input,
     FormGroup
 } from "reactstrap";
+
+import CodeMirror from "react-codemirror";
+import "codemirror/mode/javascript/javascript";
 
 import { withAuthorization } from "../Session";
 import { withFirebase } from "../Firebase";
@@ -21,33 +25,45 @@ const INITIAL_STATE = {
     mcquestions: [
         {
             uid: "1",
-            index: 1,
+            qindex: 1,
             questionText: "What is life?",
+            codeSnippet:
+                "function f() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
             options: ["option1", "option2", "option3", "option4", "option5"],
             answer: "",
+            tsStarted: "",
+            tsAnswered: "",
             duration: 180
         },
         {
             uid: "2",
-            index: 2,
+            qindex: 2,
             questionText: "What is zero?",
             options: ["option1", "option2", "option3", "option4", "option5"],
             answer: "",
+            tsStarted: "",
+            tsAnswered: "",
             duration: 180
         }
     ],
     progchallenges: [
         {
             uid: "3",
-            index: 3,
-            challenge: "question11",
-            answer: ""
+            qindex: 3,
+            challengeText: "question11",
+            answer: "",
+            answerTemplate: "",
+            tsStarted: "",
+            tsAnswered: ""
         },
         {
             uid: "4",
-            index: 4,
-            challenge: "question21",
-            answer: ""
+            qindex: 4,
+            challengeText: "question21",
+            answer: "",
+            answerTemplate: "",
+            tsStarted: "",
+            tsAnswered: ""
         }
     ],
     currentQuestionIndex: 1
@@ -98,49 +114,67 @@ class JavascriptExamPage extends Component {
                 mcquestions
             };
         });
+        this.setState({
+            currentQuestionAnswered: true
+        });
     };
 
     submitAnswer() {
         this.setState(prevState => ({
-            currentQuestionIndex: prevState.currentQuestionIndex + 1
+            currentQuestionIndex: prevState.currentQuestionIndex + 1,
+            currentQuestionAnswered: false
         }));
     }
 
     renderMCQuestions() {
         const { mcquestions, currentQuestionIndex } = this.state;
         const cardsOfQuestions = mcquestions.map((question, index) => {
-            const { uid, options } = question;
-            const radioButtons = [1, 2, 3, 4, 5].map(option => {
-                const optionStrId = `${uid}-option${option}`;
-                const radioGroupId = `radio-group-${uid}`;
-                return (
-                    <div>
-                        <Input
-                            type="radio"
-                            name={radioGroupId}
-                            value={option}
-                            id={optionStrId}
-                            onChange={() =>
-                                this.onUpdateItem(index, options[option - 1])
-                            }
-                        />
-                        <Label for={optionStrId}>{options[option - 1]}</Label>
-                    </div>
-                );
-            });
+            const { uid, options, qindex, codeSnippet } = question;
+            const radioButtons = ["A", "B", "C", "D", "E"].map(
+                (option, optIndex) => {
+                    const optionStrId = `${uid}-option${option}`;
+                    const radioGroupId = `radio-group-${uid}`;
+                    return (
+                        <div>
+                            <Input
+                                type="radio"
+                                name={radioGroupId}
+                                value={option}
+                                id={optionStrId}
+                                onChange={() =>
+                                    this.onUpdateItem(index, options[optIndex])
+                                }
+                            />
+                            <Label for={optionStrId}>{options[optIndex]}</Label>
+                        </div>
+                    );
+                }
+            );
 
             return (
                 <Card
                     className={
-                        question.index === currentQuestionIndex
-                            ? "show"
-                            : "hide"
+                        qindex === currentQuestionIndex ? "show" : "hide"
                     }
                 >
-                    <CardHeader>Question #{question.index}</CardHeader>
+                    <CardHeader>Question #{qindex}</CardHeader>
                     <CardBody>
                         <Card>
-                            <CardBody>This is a question</CardBody>
+                            <CardTitle className="ml-3 mt-2">
+                                This is a question
+                            </CardTitle>
+                            {codeSnippet && (
+                                <CardBody>
+                                    <CodeMirror
+                                        value={codeSnippet}
+                                        options={{
+                                            lineNumbers: false,
+                                            mode: "javascript",
+                                            readOnly: "nocursor"
+                                        }}
+                                    />
+                                </CardBody>
+                            )}
                         </Card>
                         <FormGroup className="ml-4 mt-4">
                             {radioButtons}
@@ -153,23 +187,44 @@ class JavascriptExamPage extends Component {
         return cardsOfQuestions;
     }
 
+    renderProgChallenges() {
+        const { progchallenges, currentQuestionIndex } = this.state;
+        const cardsOfChallenges = progchallenges.map(question => {
+            const { qindex, challengeText, answerTemplate } = question;
+
+            return (
+                <Card
+                    className={
+                        qindex === currentQuestionIndex ? "show" : "hide"
+                    }
+                >
+                    <CardHeader>Question #{qindex}</CardHeader>
+                    <CardBody>
+                        <Card>
+                            <CardBody>{challengeText}</CardBody>
+                        </Card>
+                        <FormGroup className="ml-4 mt-4" />
+                        <Label>Your answer is: {answerTemplate}</Label>
+                    </CardBody>
+                </Card>
+            );
+        });
+        return cardsOfChallenges;
+    }
+
     render() {
-        /* const {
-            mcquestions,
-            progchallenges,
-            currentQuestionIndex
-        } = this.state;
-        */
+        const { currentQuestionAnswered } = this.state;
         return (
             <Container>
                 <Row>
                     <Col lg={{ size: 8, offset: 2 }}>
                         {this.renderMCQuestions()}
-
+                        {this.renderProgChallenges()}
                         <Button
                             className="mt-4"
                             block
                             onClick={() => this.submitAnswer()}
+                            disabled={!currentQuestionAnswered}
                         >
                             Submit Answer
                         </Button>

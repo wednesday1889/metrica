@@ -40,3 +40,9 @@ code {
 .hide {
     display: none;
 }
+
+.ReactCodeMirror {
+    max-width: 800px;
+    max-height: 400px;
+    border: 1px solid;
+}

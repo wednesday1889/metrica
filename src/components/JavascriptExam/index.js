@@ -66,7 +66,8 @@ const INITIAL_STATE = {
             tsAnswered: ""
         }
     ],
-    currentQuestionIndex: 1
+    currentQuestionIndex: 1,
+    currentTimeLeft: null
 };
 
 class JavascriptExamPage extends Component {
@@ -94,18 +95,38 @@ class JavascriptExamPage extends Component {
                 });
             });
             */
+        const { currentQuestionIndex } = this.state;
+        if (currentQuestionIndex === 1) {
+            this.setState(state => {
+                const mcquestions = state.mcquestions.map(item => {
+                    if (
+                        item.qindex === currentQuestionIndex &&
+                        !item.tsStarted
+                    ) {
+                        const updatedItem = Object.assign({}, item);
+                        updatedItem.tsStarted = new Date();
+                        return updatedItem;
+                    }
+                    return item;
+                });
+                return {
+                    mcquestions
+                };
+            });
+        }
     }
 
     componentWillUnmount() {
         // this.unsubscribe();
     }
 
-    onUpdateItem = (i, value) => {
+    onUpdateChoice = (i, value) => {
         this.setState(state => {
             const mcquestions = state.mcquestions.map((item, j) => {
                 if (j === i) {
                     const updatedItem = Object.assign({}, item);
                     updatedItem.answer = value;
+                    updatedItem.tsAnswered = new Date();
                     return updatedItem;
                 }
                 return item;
@@ -124,12 +145,34 @@ class JavascriptExamPage extends Component {
             currentQuestionIndex: prevState.currentQuestionIndex + 1,
             currentQuestionAnswered: false
         }));
+
+        this.setState(state => {
+            const { currentQuestionIndex } = this.state;
+            const mcquestions = state.mcquestions.map(item => {
+                if (item.qindex === currentQuestionIndex) {
+                    const updatedItem = Object.assign({}, item);
+                    updatedItem.tsStarted = new Date();
+                    return updatedItem;
+                }
+                return item;
+            });
+            return {
+                mcquestions
+            };
+        });
     }
 
     renderMCQuestions() {
         const { mcquestions, currentQuestionIndex } = this.state;
         const cardsOfQuestions = mcquestions.map((question, index) => {
-            const { uid, options, qindex, codeSnippet } = question;
+            const {
+                uid,
+                options,
+                qindex,
+                codeSnippet,
+                tsAnswered,
+                tsStarted
+            } = question;
             const radioButtons = ["A", "B", "C", "D", "E"].map(
                 (option, optIndex) => {
                     const optionStrId = `${uid}-option${option}`;
@@ -142,7 +185,10 @@ class JavascriptExamPage extends Component {
                                 value={option}
                                 id={optionStrId}
                                 onChange={() =>
-                                    this.onUpdateItem(index, options[optIndex])
+                                    this.onUpdateChoice(
+                                        index,
+                                        options[optIndex]
+                                    )
                                 }
                             />
                             <Label for={optionStrId}>{options[optIndex]}</Label>
@@ -161,7 +207,9 @@ class JavascriptExamPage extends Component {
                     <CardBody>
                         <Card>
                             <CardTitle className="ml-3 mt-2">
-                                This is a question
+                                This is a question Started:{" "}
+                                {tsStarted.toString()}
+                                Answered: {tsAnswered.toString()}
                             </CardTitle>
                             {codeSnippet && (
                                 <CardBody>

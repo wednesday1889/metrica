@@ -81,20 +81,6 @@ class JavascriptExamPage extends Component {
     }
 
     componentDidMount() {
-        /*
-        const { firebase } = this.props;
-
-        this.setState({ loading: true });
-        this.unsubscribe = firebase
-            .user(firebase.auth.currentUser.uid)
-            .onSnapshot(snapshot => {
-                const user = snapshot.data();
-                this.setState({
-                    ...user,
-                    loading: false
-                });
-            });
-            */
         const { currentQuestionIndex } = this.state;
         if (currentQuestionIndex === 1) {
             this.setState(state => {
@@ -121,38 +107,27 @@ class JavascriptExamPage extends Component {
     }
 
     onUpdateChoice = (i, value) => {
-        this.setState(state => {
-            const mcquestions = state.mcquestions.map((item, j) => {
-                if (j === i) {
-                    const updatedItem = Object.assign({}, item);
-                    updatedItem.answer = value;
-                    updatedItem.tsAnswered = new Date();
-                    return updatedItem;
-                }
-                return item;
-            });
-            return {
-                mcquestions
-            };
+        const { currentQuestionIndex } = this.state;
+        this.updateFieldsInOption("qindex", currentQuestionIndex, {
+            answer: value,
+            tsAnswered: new Date()
         });
+
         this.setState({
             currentQuestionAnswered: true
         });
     };
 
-    submitAnswer() {
-        this.setState(prevState => ({
-            currentQuestionIndex: prevState.currentQuestionIndex + 1,
-            currentQuestionAnswered: false
-        }));
-
+    updateFieldsInOption(basisField, basisFieldValue, newItem) {
+        // TODO: Use Array.reduce to make complex basisObject instead of one field only
         this.setState(state => {
-            const { currentQuestionIndex } = this.state;
             const mcquestions = state.mcquestions.map(item => {
-                if (item.qindex === currentQuestionIndex) {
-                    const updatedItem = Object.assign({}, item);
-                    updatedItem.tsStarted = new Date();
-                    return updatedItem;
+                if (item[basisField] === basisFieldValue) {
+                    const itemToBeUpdated = Object.assign({}, item);
+                    Object.keys(newItem).forEach(key => {
+                        itemToBeUpdated[key] = newItem[key];
+                    });
+                    return itemToBeUpdated;
                 }
                 return item;
             });
@@ -160,6 +135,17 @@ class JavascriptExamPage extends Component {
                 mcquestions
             };
         });
+    }
+
+    submitAnswer() {
+        const { currentQuestionIndex } = this.state;
+        this.updateFieldsInOption("qindex", currentQuestionIndex, {
+            tsAnswered: new Date()
+        });
+        this.setState(prevState => ({
+            currentQuestionIndex: prevState.currentQuestionIndex + 1,
+            currentQuestionAnswered: false
+        }));
     }
 
     renderMCQuestions() {

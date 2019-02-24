@@ -9,21 +9,29 @@ import {
     Card,
     CardHeader,
     CardBody,
+    CardText,
     CardTitle,
     Label,
     Input,
     FormGroup
 } from "reactstrap";
 
-import CodeMirror from "react-codemirror";
+import CodeMirror from "codemirror";
+
+import "codemirror/addon/runmode/runmode";
+import "codemirror/mode/meta";
 import "codemirror/mode/javascript/javascript";
+import "codemirror/addon/display/autorefresh";
+import Highlighter from "react-codemirror-runmode";
+
+import { Controlled as CodeMirror2 } from "react-codemirror2";
 
 import Countdown from "react-countdown-now";
 import { withAuthorization } from "../Session";
 import { withFirebase } from "../Firebase";
 
 const INITIAL_STATE = {
-    mcquestions: [
+    questions: [
         {
             uid: "1",
             qindex: 1,
@@ -34,41 +42,91 @@ const INITIAL_STATE = {
             answer: "",
             tsStarted: "",
             tsAnswered: "",
-            duration: 30
+            duration: 10,
+            type: "mcq"
         },
         {
             uid: "2",
             qindex: 2,
             questionText: "What is zero?",
+            codeSnippet:
+                "function f2() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
             options: ["option1", "option2", "option3", "option4", "option5"],
             answer: "",
             tsStarted: "",
             tsAnswered: "",
-            duration: 90
-        }
-    ],
-    progchallenges: [
+            duration: 20,
+            type: "mcq"
+        },
         {
             uid: "3",
             qindex: 3,
-            challengeText: "question11",
+            questionText: "What is zero?",
+            codeSnippet:
+                "function f2() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
+            options: ["option1", "option2", "option3", "option4", "option5"],
             answer: "",
-            answerTemplate: "",
             tsStarted: "",
-            tsAnswered: ""
+            tsAnswered: "",
+            duration: 20,
+            type: "mcq"
         },
         {
             uid: "4",
             qindex: 4,
-            challengeText: "question21",
+            questionText: "What is zero?",
+            codeSnippet:
+                "function f2() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
+            options: ["option1", "option2", "option3", "option4", "option5"],
             answer: "",
-            answerTemplate: "",
             tsStarted: "",
-            tsAnswered: ""
+            tsAnswered: "",
+            duration: 20,
+            type: "mcq"
+        },
+        {
+            uid: "5",
+            qindex: 5,
+            questionText: "What is zero?",
+            codeSnippet:
+                "function f2() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
+            options: ["option1", "option2", "option3", "option4", "option5"],
+            answer: "",
+            tsStarted: "",
+            tsAnswered: "",
+            duration: 20,
+            type: "mcq"
+        },
+        {
+            uid: "6",
+            qindex: 6,
+            questionText: "question11",
+            answer:
+                "function f3() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
+            answerTemplate:
+                "function f() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
+            tsStarted: "",
+            tsAnswered: "",
+            duration: 180,
+            type: "challenge"
+        },
+        {
+            uid: "7",
+            qindex: 7,
+            questionText: "question21",
+            answer:
+                "function f4() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
+            answerTemplate:
+                "function f() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
+            tsStarted: "",
+            tsAnswered: "",
+            duration: 20,
+            type: "challenge"
         }
     ],
     currentQuestionIndex: 1,
-    currentTimeLeft: null
+    currentTimeLeft: null,
+    examDone: false
 };
 const countdownRenderer = ({ minutes, seconds }) => {
     // Render a countdown
@@ -96,7 +154,7 @@ class JavascriptExamPage extends Component {
         const { currentQuestionIndex } = this.state;
         if (currentQuestionIndex === 1) {
             this.setState(state => {
-                const mcquestions = state.mcquestions.map(item => {
+                const questions = state.questions.map(item => {
                     const condition = currItem =>
                         currItem.qindex === currentQuestionIndex &&
                         !currItem.tsStarted;
@@ -109,20 +167,22 @@ class JavascriptExamPage extends Component {
                     return item;
                 });
                 return {
-                    mcquestions
+                    questions
                 };
             });
         }
     }
 
+    componentDidUpdate() {}
+
     componentWillUnmount() {
         // this.unsubscribe();
     }
 
-    onUpdateChoice = (i, value) => {
+    onUpdateAnswer = value => {
         const { currentQuestionIndex } = this.state;
         const condition = item => item.qindex === currentQuestionIndex;
-        this.updateFieldsInOption(condition, {
+        this.updateDeepState(condition, {
             answer: value,
             tsAnswered: new Date()
         });
@@ -132,9 +192,9 @@ class JavascriptExamPage extends Component {
         });
     };
 
-    updateFieldsInOption(conditionFunc, newItem) {
+    updateDeepState(conditionFunc, newItem) {
         this.setState(state => {
-            const mcquestions = state.mcquestions.map(item => {
+            const questions = state.questions.map(item => {
                 if (conditionFunc(item)) {
                     const itemToBeUpdated = Object.assign({}, item);
                     Object.keys(newItem).forEach(key => {
@@ -145,65 +205,80 @@ class JavascriptExamPage extends Component {
                 return item;
             });
             return {
-                mcquestions
+                questions
             };
         });
     }
 
-    submitAnswer() {
-        const { currentQuestionIndex } = this.state;
+    submitAnswer(index) {
+        const { currentQuestionIndex, questions } = this.state;
+
+        // can't stop the countdown callback without doing weird stuff, so here's a workaround
+        if (index && index !== currentQuestionIndex) return;
+
         const condition = item => item.qindex === currentQuestionIndex;
 
-        this.updateFieldsInOption(condition, {
+        this.updateDeepState(condition, {
             tsAnswered: new Date()
         });
         this.setState(prevState => ({
             currentQuestionIndex: prevState.currentQuestionIndex + 1,
             currentQuestionAnswered: false
         }));
-        if (currentQuestionIndex + 1 < 10) {
+        if (currentQuestionIndex + 1 <= questions.length) {
             const conditionForNext = item =>
                 item.qindex === currentQuestionIndex + 1;
-            this.updateFieldsInOption(conditionForNext, {
+            this.updateDeepState(conditionForNext, {
                 tsStarted: new Date()
             });
+        } else {
+            this.setState({ examDone: true });
         }
     }
 
-    renderMCQuestions() {
-        const { mcquestions, currentQuestionIndex } = this.state;
-        const cardsOfQuestions = mcquestions.map((question, index) => {
+    renderRadioButtons(uid, index, options) {
+        const radioButtons = ["A", "B", "C", "D", "E"].map(
+            (option, optIndex) => {
+                const optionStrId = `${uid}-option${option}`;
+                const radioGroupId = `radio-group-${uid}`;
+                return (
+                    <div key={optionStrId}>
+                        <Input
+                            type="radio"
+                            name={radioGroupId}
+                            value={option}
+                            id={optionStrId}
+                            onChange={() =>
+                                this.onUpdateAnswer(options[optIndex])
+                            }
+                        />
+                        <Label for={optionStrId}>{options[optIndex]}</Label>
+                    </div>
+                );
+            }
+        );
+        return radioButtons;
+    }
+
+    renderQuestions() {
+        const { questions, currentQuestionIndex } = this.state;
+        const cardsOfQuestions = questions.map((question, index) => {
             const {
                 uid,
                 options,
                 qindex,
                 codeSnippet,
                 tsStarted,
-                duration
+                duration,
+                type,
+                questionText,
+                answer
             } = question;
-            const radioButtons = ["A", "B", "C", "D", "E"].map(
-                (option, optIndex) => {
-                    const optionStrId = `${uid}-option${option}`;
-                    const radioGroupId = `radio-group-${uid}`;
-                    return (
-                        <div key={optionStrId}>
-                            <Input
-                                type="radio"
-                                name={radioGroupId}
-                                value={option}
-                                id={optionStrId}
-                                onChange={() =>
-                                    this.onUpdateChoice(
-                                        index,
-                                        options[optIndex]
-                                    )
-                                }
-                            />
-                            <Label for={optionStrId}>{options[optIndex]}</Label>
-                        </div>
-                    );
-                }
-            );
+
+            const radioButtons =
+                type === "mcq"
+                    ? this.renderRadioButtons(uid, index, options)
+                    : null;
 
             return (
                 <Card
@@ -224,7 +299,7 @@ class JavascriptExamPage extends Component {
                                         )
                                     }
                                     renderer={countdownRenderer}
-                                    onComplete={() => this.submitAnswer()}
+                                    onComplete={() => this.submitAnswer(qindex)}
                                 />
                             )}
                         </div>
@@ -232,25 +307,46 @@ class JavascriptExamPage extends Component {
                     <CardBody>
                         <Card>
                             <CardTitle className="ml-3 mt-2">
-                                This is a question
+                                {questionText}
                             </CardTitle>
                             {codeSnippet && (
                                 <CardBody>
-                                    <CodeMirror
+                                    <Highlighter
+                                        id={uid}
+                                        theme="default"
                                         value={codeSnippet}
-                                        options={{
-                                            lineNumbers: false,
-                                            mode: "javascript",
-                                            readOnly: "nocursor"
-                                        }}
+                                        language="javascript"
+                                        codeMirror={CodeMirror}
                                     />
                                 </CardBody>
                             )}
                         </Card>
-                        <FormGroup className="ml-4 mt-4">
-                            {radioButtons}
-                        </FormGroup>
-                        <Label>Your answer is: {question.answer}</Label>
+                        {type === "mcq" && (
+                            <div>
+                                <FormGroup className="ml-4 mt-4">
+                                    {radioButtons}
+                                </FormGroup>
+                                <Label>Your answer is: {question.answer}</Label>
+                            </div>
+                        )}
+                        {type === "challenge" && (
+                            <CodeMirror2
+                                className="border border-info mt-1"
+                                value={answer}
+                                options={{
+                                    mode: "javascript",
+                                    theme: "default",
+                                    lineNumbers: true,
+                                    autoRefresh: true
+                                }}
+                                onBeforeChange={(editor, data, value) => {
+                                    this.onUpdateAnswer(value);
+                                }}
+                                onChange={(editor, data, value) => {
+                                    this.onUpdateAnswer(value);
+                                }}
+                            />
+                        )}
                     </CardBody>
                 </Card>
             );
@@ -258,49 +354,39 @@ class JavascriptExamPage extends Component {
         return cardsOfQuestions;
     }
 
-    renderProgChallenges() {
-        const { progchallenges, currentQuestionIndex } = this.state;
-        const cardsOfChallenges = progchallenges.map(question => {
-            const { qindex, challengeText, answerTemplate } = question;
-
-            return (
-                <Card
-                    className={
-                        qindex === currentQuestionIndex ? "show" : "hide"
-                    }
-                    key={qindex}
-                >
-                    <CardHeader>Question #{qindex} </CardHeader>
-                    <CardBody>
-                        <Card>
-                            <CardBody>{challengeText}</CardBody>
-                        </Card>
-                        <FormGroup className="ml-4 mt-4" />
-                        <Label>Your answer is: {answerTemplate}</Label>
-                    </CardBody>
-                </Card>
-            );
-        });
-        return cardsOfChallenges;
-    }
-
     render() {
-        const { currentQuestionAnswered } = this.state;
+        const { currentQuestionAnswered, examDone } = this.state;
         return (
             <Container>
                 <Row>
-                    <Col lg={{ size: 8, offset: 2 }}>
-                        {this.renderMCQuestions()}
-                        {this.renderProgChallenges()}
-                        <Button
-                            className="mt-4"
-                            block
-                            onClick={() => this.submitAnswer()}
-                            disabled={!currentQuestionAnswered}
-                        >
-                            Submit Answer
-                        </Button>
-                    </Col>
+                    {!examDone && (
+                        <Col lg={{ size: 8, offset: 2 }}>
+                            {this.renderQuestions()}
+                            <Button
+                                className="mt-4"
+                                block
+                                onClick={() => this.submitAnswer()}
+                                disabled={!currentQuestionAnswered}
+                            >
+                                Submit Answer
+                            </Button>
+                        </Col>
+                    )}
+                    {examDone && (
+                        <Col lg={{ size: 4, offset: 4 }}>
+                            <Card color="success" inverse>
+                                <CardHeader>
+                                    Your have completed the Online Assessment!
+                                </CardHeader>
+                                <CardText className="pl-4 pt-2 pb-2 pr-4">
+                                    Congratulations on completing the exam!{" "}
+                                    <br />
+                                    We will be assessing your exam answers and
+                                    our recruiter will contact you soon. <br />
+                                </CardText>
+                            </Card>
+                        </Col>
+                    )}
                 </Row>
             </Container>
         );

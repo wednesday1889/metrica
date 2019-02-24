@@ -85,10 +85,11 @@ class JavascriptExamPage extends Component {
         if (currentQuestionIndex === 1) {
             this.setState(state => {
                 const mcquestions = state.mcquestions.map(item => {
-                    if (
-                        item.qindex === currentQuestionIndex &&
-                        !item.tsStarted
-                    ) {
+                    const condition = currItem =>
+                        currItem.qindex === currentQuestionIndex &&
+                        !currItem.tsStarted;
+
+                    if (condition(item)) {
                         const updatedItem = Object.assign({}, item);
                         updatedItem.tsStarted = new Date();
                         return updatedItem;
@@ -108,7 +109,8 @@ class JavascriptExamPage extends Component {
 
     onUpdateChoice = (i, value) => {
         const { currentQuestionIndex } = this.state;
-        this.updateFieldsInOption("qindex", currentQuestionIndex, {
+        const condition = item => item.qindex === currentQuestionIndex;
+        this.updateFieldsInOption(condition, {
             answer: value,
             tsAnswered: new Date()
         });
@@ -118,11 +120,11 @@ class JavascriptExamPage extends Component {
         });
     };
 
-    updateFieldsInOption(basisField, basisFieldValue, newItem) {
+    updateFieldsInOption(conditionFunc, newItem) {
         // TODO: Use Array.reduce to make complex basisObject instead of one field only
         this.setState(state => {
             const mcquestions = state.mcquestions.map(item => {
-                if (item[basisField] === basisFieldValue) {
+                if (conditionFunc(item)) {
                     const itemToBeUpdated = Object.assign({}, item);
                     Object.keys(newItem).forEach(key => {
                         itemToBeUpdated[key] = newItem[key];
@@ -139,7 +141,8 @@ class JavascriptExamPage extends Component {
 
     submitAnswer() {
         const { currentQuestionIndex } = this.state;
-        this.updateFieldsInOption("qindex", currentQuestionIndex, {
+        const condition = item => item.qindex === currentQuestionIndex;
+        this.updateFieldsInOption(condition, {
             tsAnswered: new Date()
         });
         this.setState(prevState => ({

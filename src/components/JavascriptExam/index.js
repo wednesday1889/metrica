@@ -18,6 +18,7 @@ import {
 import CodeMirror from "react-codemirror";
 import "codemirror/mode/javascript/javascript";
 
+import Countdown from "react-countdown-now";
 import { withAuthorization } from "../Session";
 import { withFirebase } from "../Firebase";
 
@@ -33,7 +34,7 @@ const INITIAL_STATE = {
             answer: "",
             tsStarted: "",
             tsAnswered: "",
-            duration: 180
+            duration: 30
         },
         {
             uid: "2",
@@ -43,7 +44,7 @@ const INITIAL_STATE = {
             answer: "",
             tsStarted: "",
             tsAnswered: "",
-            duration: 180
+            duration: 90
         }
     ],
     progchallenges: [
@@ -68,6 +69,17 @@ const INITIAL_STATE = {
     ],
     currentQuestionIndex: 1,
     currentTimeLeft: null
+};
+const countdownRenderer = ({ minutes, seconds }) => {
+    // Render a countdown
+    return (
+        <strong>
+            <span className={minutes <= 1 ? "text-danger" : "text-success"}>
+                {minutes < 10 ? `0${minutes}` : minutes}:
+                {seconds < 10 ? `0${seconds}` : seconds}
+            </span>
+        </strong>
+    );
 };
 
 class JavascriptExamPage extends Component {
@@ -121,7 +133,6 @@ class JavascriptExamPage extends Component {
     };
 
     updateFieldsInOption(conditionFunc, newItem) {
-        // TODO: Use Array.reduce to make complex basisObject instead of one field only
         this.setState(state => {
             const mcquestions = state.mcquestions.map(item => {
                 if (conditionFunc(item)) {
@@ -142,6 +153,7 @@ class JavascriptExamPage extends Component {
     submitAnswer() {
         const { currentQuestionIndex } = this.state;
         const condition = item => item.qindex === currentQuestionIndex;
+
         this.updateFieldsInOption(condition, {
             tsAnswered: new Date()
         });
@@ -149,6 +161,13 @@ class JavascriptExamPage extends Component {
             currentQuestionIndex: prevState.currentQuestionIndex + 1,
             currentQuestionAnswered: false
         }));
+        if (currentQuestionIndex + 1 < 10) {
+            const conditionForNext = item =>
+                item.qindex === currentQuestionIndex + 1;
+            this.updateFieldsInOption(conditionForNext, {
+                tsStarted: new Date()
+            });
+        }
     }
 
     renderMCQuestions() {
@@ -159,15 +178,15 @@ class JavascriptExamPage extends Component {
                 options,
                 qindex,
                 codeSnippet,
-                tsAnswered,
-                tsStarted
+                tsStarted,
+                duration
             } = question;
             const radioButtons = ["A", "B", "C", "D", "E"].map(
                 (option, optIndex) => {
                     const optionStrId = `${uid}-option${option}`;
                     const radioGroupId = `radio-group-${uid}`;
                     return (
-                        <div>
+                        <div key={optionStrId}>
                             <Input
                                 type="radio"
                                 name={radioGroupId}
@@ -191,14 +210,29 @@ class JavascriptExamPage extends Component {
                     className={
                         qindex === currentQuestionIndex ? "show" : "hide"
                     }
+                    key={qindex}
                 >
-                    <CardHeader>Question #{qindex}</CardHeader>
+                    <CardHeader>
+                        Question #{qindex}
+                        <div className="float-right">
+                            {tsStarted && (
+                                <Countdown
+                                    date={
+                                        new Date(
+                                            tsStarted.getTime() +
+                                                duration * 1000
+                                        )
+                                    }
+                                    renderer={countdownRenderer}
+                                    onComplete={() => this.submitAnswer()}
+                                />
+                            )}
+                        </div>
+                    </CardHeader>
                     <CardBody>
                         <Card>
                             <CardTitle className="ml-3 mt-2">
-                                This is a question Started:{" "}
-                                {tsStarted.toString()}
-                                Answered: {tsAnswered.toString()}
+                                This is a question
                             </CardTitle>
                             {codeSnippet && (
                                 <CardBody>
@@ -234,8 +268,9 @@ class JavascriptExamPage extends Component {
                     className={
                         qindex === currentQuestionIndex ? "show" : "hide"
                     }
+                    key={qindex}
                 >
-                    <CardHeader>Question #{qindex}</CardHeader>
+                    <CardHeader>Question #{qindex} </CardHeader>
                     <CardBody>
                         <Card>
                             <CardBody>{challengeText}</CardBody>

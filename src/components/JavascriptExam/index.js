@@ -370,7 +370,10 @@ class JavascriptComponent extends Component {
                                 this.onUpdateAnswer(options[optIndex])
                             }
                         />
-                        <Label for={optionStrId}>{options[optIndex]}</Label>
+
+                        <Label className="text-monospace" for={optionStrId}>
+                            {options[optIndex]}
+                        </Label>
                     </div>
                 );
             }
@@ -444,7 +447,9 @@ class JavascriptComponent extends Component {
                                 <FormGroup className="ml-4 mt-4">
                                     {radioButtons}
                                 </FormGroup>
-                                <Label>Your answer is: {question.answer}</Label>
+                                <Label className="text-monospace">
+                                    Your answer is: {question.answer}
+                                </Label>
                             </div>
                         )}
                         {type === "challenge" && (

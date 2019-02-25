@@ -125,7 +125,7 @@ const INITIAL_STATE = {
         }
     ],
     currentQuestionIndex: 1,
-    currentTimeLeft: null,
+    examStarted: false,
     examDone: false
 };
 const countdownRenderer = ({ minutes, seconds }) => {
@@ -345,6 +345,9 @@ class JavascriptExamPage extends Component {
                                 onChange={(editor, data, value) => {
                                     this.onUpdateAnswer(value);
                                 }}
+                                onPaste={(editor, event) => {
+                                    event.preventDefault();
+                                }}
                             />
                         )}
                     </CardBody>
@@ -355,15 +358,68 @@ class JavascriptExamPage extends Component {
     }
 
     render() {
-        const { currentQuestionAnswered, examDone } = this.state;
+        const { currentQuestionAnswered, examDone, examStarted } = this.state;
         return (
             <Container>
                 <Row>
-                    {!examDone && (
+                    {!examStarted && (
+                        <Col lg={{ size: 6, offset: 3 }}>
+                            <Card>
+                                <CardHeader
+                                    className="text-white bg-warning"
+                                    inverse
+                                >
+                                    <strong>
+                                        Exam Guidelines - Please read ME!
+                                    </strong>
+                                </CardHeader>
+                                <CardText className="pl-4 pt-2 pb-2 pr-4">
+                                    The duration for this exam is around 30
+                                    minutes.
+                                    <br />
+                                    <br />
+                                    Each question is timed, once the timer is up
+                                    you will be moved to the next question with
+                                    the current question being set to
+                                    unanswered. You can&apos;t go back to a
+                                    previous question.
+                                    <br />
+                                    <br />
+                                    This exam contains multiple choice questions
+                                    and programming challenges
+                                    <br />
+                                    <br />
+                                    Please make sure you have a stable internet
+                                    connection while taking this assessment.
+                                    <br />
+                                    <br />
+                                    <i>
+                                        <strong>
+                                            For the programming challenges,
+                                            don&apos;t worry too much on syntax.
+                                            We just want to see your basic
+                                            programming knowledge and problem
+                                            solving skills
+                                        </strong>
+                                    </i>
+                                </CardText>
+                            </Card>
+                            <Button
+                                className="mt-4 bg-primary"
+                                block
+                                onClick={() =>
+                                    this.setState({ examStarted: true })
+                                }
+                            >
+                                I am READY!
+                            </Button>
+                        </Col>
+                    )}
+                    {examStarted && !examDone && (
                         <Col lg={{ size: 8, offset: 2 }}>
                             {this.renderQuestions()}
                             <Button
-                                className="mt-4"
+                                className="mt-4 bg-primary"
                                 block
                                 onClick={() => this.submitAnswer()}
                                 disabled={!currentQuestionAnswered}
@@ -372,17 +428,19 @@ class JavascriptExamPage extends Component {
                             </Button>
                         </Col>
                     )}
-                    {examDone && (
+                    {examStarted && examDone && (
                         <Col lg={{ size: 4, offset: 4 }}>
                             <Card color="success" inverse>
                                 <CardHeader>
                                     Your have completed the Online Assessment!
                                 </CardHeader>
                                 <CardText className="pl-4 pt-2 pb-2 pr-4">
-                                    Congratulations on completing the exam!{" "}
+                                    Congratulations on completing the exam!
                                     <br />
                                     We will be assessing your exam answers and
                                     our recruiter will contact you soon. <br />
+                                    <br />
+                                    Thank you!
                                 </CardText>
                             </Card>
                         </Col>

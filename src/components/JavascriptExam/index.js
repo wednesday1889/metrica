@@ -13,10 +13,12 @@ import {
     CardTitle,
     Label,
     Input,
-    FormGroup
+    FormGroup,
+    Alert
 } from "reactstrap";
 
 import CodeMirror from "codemirror";
+import { js_beautify as jsBeautify } from "js-beautify";
 
 import "codemirror/addon/runmode/runmode";
 import "codemirror/mode/meta";
@@ -27,107 +29,20 @@ import Highlighter from "react-codemirror-runmode";
 import { Controlled as CodeMirror2 } from "react-codemirror2";
 
 import Countdown from "react-countdown-now";
-import { withAuthorization } from "../Session";
+
+import { GrowingSpinner } from "../CenteredSpinner";
+import { AuthUserContext, withAuthorization } from "../Session";
 import { withFirebase } from "../Firebase";
 
 const INITIAL_STATE = {
-    questions: [
-        {
-            uid: "1",
-            qindex: 1,
-            questionText: "What is life?",
-            codeSnippet:
-                "function f() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
-            options: ["option1", "option2", "option3", "option4", "option5"],
-            answer: "",
-            tsStarted: "",
-            tsAnswered: "",
-            duration: 50,
-            type: "mcq"
-        },
-        {
-            uid: "2",
-            qindex: 2,
-            questionText: "What is zero?",
-            codeSnippet:
-                "function f2() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
-            options: ["option1", "option2", "option3", "option4", "option5"],
-            answer: "",
-            tsStarted: "",
-            tsAnswered: "",
-            duration: 20,
-            type: "mcq"
-        },
-        {
-            uid: "3",
-            qindex: 3,
-            questionText: "What is zero?",
-            codeSnippet:
-                "function f2() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
-            options: ["option1", "option2", "option3", "option4", "option5"],
-            answer: "",
-            tsStarted: "",
-            tsAnswered: "",
-            duration: 20,
-            type: "mcq"
-        },
-        {
-            uid: "4",
-            qindex: 4,
-            questionText: "What is zero?",
-            codeSnippet:
-                "function f2() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
-            options: ["option1", "option2", "option3", "option4", "option5"],
-            answer: "",
-            tsStarted: "",
-            tsAnswered: "",
-            duration: 20,
-            type: "mcq"
-        },
-        {
-            uid: "5",
-            qindex: 5,
-            questionText: "What is zero?",
-            codeSnippet:
-                "function f2() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
-            options: ["option1", "option2", "option3", "option4", "option5"],
-            answer: "",
-            tsStarted: "",
-            tsAnswered: "",
-            duration: 20,
-            type: "mcq"
-        },
-        {
-            uid: "6",
-            qindex: 6,
-            questionText: "question11",
-            answer:
-                "function f3() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
-            answerTemplate:
-                "function f() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
-            tsStarted: "",
-            tsAnswered: "",
-            duration: 180,
-            type: "challenge"
-        },
-        {
-            uid: "7",
-            qindex: 7,
-            questionText: "question21",
-            answer:
-                "function f4() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
-            answerTemplate:
-                "function f() { \n\tvar x = 2;\n} \nconsole.log(x); // Uncaught ReferenceError: x is not defined",
-            tsStarted: "",
-            tsAnswered: "",
-            duration: 20,
-            type: "challenge"
-        }
-    ],
-    currentQuestionIndex: 1,
+    questions: [],
+    currentQuestionIndex: -1,
     examStarted: false,
     examDone: false,
-    languageTaken: ""
+    languageTaken: "js",
+    loading: false,
+    isError: "",
+    currentQuestionAnswered: false
 };
 const countdownRenderer = ({ minutes, seconds }) => {
     // Render a countdown
@@ -141,110 +56,309 @@ const countdownRenderer = ({ minutes, seconds }) => {
     );
 };
 
-class JavascriptExamPage extends Component {
+const beautify = str => {
+    const options = {
+        indent_size: "4",
+        indent_char: " ",
+        max_preserve_newlines: "5",
+        preserve_newlines: true,
+        keep_array_indentation: false,
+        break_chained_methods: false,
+        indent_scripts: "normal",
+        brace_style: "collapse",
+        space_before_conditional: true,
+        unescape_strings: false,
+        jslint_happy: false,
+        end_with_newline: false,
+        wrap_line_length: "0",
+        indent_inner_html: false,
+        comma_first: false,
+        e4x: false
+    };
+    return jsBeautify(str, options);
+};
+
+const updateQuestions = (questions, conditionFunc, newItem) => {
+    const questionsUpdated = questions.map(item => {
+        if (conditionFunc(item)) {
+            const itemToBeUpdated = Object.assign({}, item);
+            Object.keys(newItem).forEach(key => {
+                itemToBeUpdated[key] = newItem[key];
+            });
+            return itemToBeUpdated;
+        }
+        return item;
+    });
+
+    return questionsUpdated;
+};
+
+const JavascriptExamPage = props => (
+    <AuthUserContext.Consumer>
+        {authUser => (
+            <JavascriptComponent
+                authUser={authUser}
+                firebase={props.firebase}
+                history={props.history}
+            />
+        )}
+    </AuthUserContext.Consumer>
+);
+
+class JavascriptComponent extends Component {
     constructor(props) {
         super(props);
-
         this.state = {
             ...INITIAL_STATE
-            // loading: true
         };
     }
-
-    componentDidMount() {}
 
     componentDidUpdate() {}
 
     componentWillUnmount() {
-        // this.unsubscribe();
+        if (this.unsubscribe) this.unsubscribe();
     }
 
     onUpdateAnswer = value => {
-        const { currentQuestionIndex } = this.state;
+        const { currentQuestionIndex, questions } = this.state;
         const condition = item => item.qindex === currentQuestionIndex;
-        this.updateDeepState(condition, {
+        const updatedQuestions = updateQuestions(questions, condition, {
             answer: value,
-            tsAnswered: new Date()
+            tsAnswered: this.getCurrentDateInTimestamp()
         });
 
         this.setState({
+            questions: updatedQuestions,
             currentQuestionAnswered: true
         });
     };
 
-    updateDeepState(conditionFunc, newItem) {
-        this.setState(state => {
-            const questions = state.questions.map(item => {
-                if (conditionFunc(item)) {
-                    const itemToBeUpdated = Object.assign({}, item);
-                    Object.keys(newItem).forEach(key => {
-                        itemToBeUpdated[key] = newItem[key];
-                    });
-                    return itemToBeUpdated;
+    getCurrentDateInTimestamp() {
+        const { firebase } = this.props;
+        return firebase.Timestamp.fromDate(new Date());
+    }
+
+    generateExam() {
+        const { authUser } = this.props;
+        const { email, examCode } = authUser;
+
+        const { firebase } = this.props;
+
+        const generateExamFunc = firebase.generateExam();
+
+        this.setState({ loading: true });
+
+        firebase
+            .exam(email)
+            .get()
+            .then(snapshot => {
+                if (snapshot.exists) {
+                    this.startListeningToFirebaseExam();
+                } else {
+                    generateExamFunc({
+                        email,
+                        examCode,
+                        language: "js"
+                    })
+                        .then(() => {
+                            this.setState({ loading: false });
+                            this.startListeningToFirebaseExam();
+                        })
+                        .catch(error => {
+                            this.setState({
+                                isError: error.message,
+                                loading: false
+                            });
+                        });
                 }
-                return item;
             });
-            return {
-                questions
-            };
-        });
     }
 
-    initializeExam() {
-        const { currentQuestionIndex } = this.state;
-        this.setState({ examStarted: true });
-        if (currentQuestionIndex === 1) {
-            this.setState(state => {
-                const questions = state.questions.map(item => {
-                    const condition = currItem =>
-                        currItem.qindex === currentQuestionIndex &&
-                        !currItem.tsStarted;
+    startListeningToFirebaseExam() {
+        const { firebase, authUser } = this.props;
+        const { email } = authUser;
 
-                    if (condition(item)) {
-                        const updatedItem = Object.assign({}, item);
-                        updatedItem.tsStarted = new Date();
-                        return updatedItem;
+        this.setState({ loading: true });
+        firebase
+            .exam(email)
+            .get()
+            .then(snapshot => {
+                const exam = snapshot.data();
+
+                const beautifiedQuestions = exam.questions.map(question => {
+                    const newQuestion = Object.assign({}, question);
+                    if (newQuestion.type === "mcq") {
+                        newQuestion.codeSnippet = beautify(
+                            newQuestion.codeSnippet
+                        );
+                    } else {
+                        newQuestion.answer = beautify(newQuestion.answer);
                     }
-                    return item;
+                    return newQuestion;
                 });
-                return {
-                    questions
-                };
+
+                exam.questions = beautifiedQuestions;
+                this.initialized = true;
+                this.setState({
+                    ...exam,
+                    loading: false
+                });
+
+                this.startExam();
             });
-        }
     }
 
-    submitAnswer(index) {
+    startExam() {
         const { currentQuestionIndex, questions } = this.state;
 
-        // can't stop the countdown callback without doing weird stuff, so here's a workaround
-        if (index && index !== currentQuestionIndex) return;
+        const { tsStarted, duration } = questions[currentQuestionIndex - 1];
+        let isTimedout = false;
+        // debugger;
+        if (tsStarted && duration) {
+            const dateStarted = tsStarted.toDate();
+            const dateNow = new Date();
+            const timeLapsed = dateNow.getTime() - dateStarted.getTime();
+            isTimedout = timeLapsed / 1000 >= duration;
+        }
 
-        const condition = item => item.qindex === currentQuestionIndex;
+        if (questions[currentQuestionIndex - 1].tsStarted === "") {
+            const condition = currItem =>
+                currItem.qindex === currentQuestionIndex && !currItem.tsStarted;
 
-        this.updateDeepState(condition, {
-            tsAnswered: new Date()
-        });
-        this.setState(prevState => ({
-            currentQuestionIndex: prevState.currentQuestionIndex + 1,
-            currentQuestionAnswered: false
-        }));
-        if (currentQuestionIndex + 1 <= questions.length) {
+            const updatedQuestions = updateQuestions(questions, condition, {
+                tsStarted: this.getCurrentDateInTimestamp()
+            });
+
+            this.setState(
+                {
+                    examStarted: true,
+                    questions: updatedQuestions
+                },
+                this.updateFirebase
+            );
+        } else if (currentQuestionIndex + 1 <= questions.length && isTimedout) {
             const conditionForNext = item =>
                 item.qindex === currentQuestionIndex + 1;
-            this.updateDeepState(conditionForNext, {
-                tsStarted: new Date()
-            });
-        } else {
+            const updatedQuestions = updateQuestions(
+                questions,
+                conditionForNext,
+                {
+                    tsStarted: this.getCurrentDateInTimestamp()
+                }
+            );
+            const conditionForPrev = item =>
+                item.qindex === currentQuestionIndex;
+            const updatedQuestionsForPrev = updateQuestions(
+                updatedQuestions,
+                conditionForPrev,
+                {
+                    tsAnswered: this.getCurrentDateInTimestamp()
+                }
+            );
+
+            this.setState(
+                prevState => ({
+                    examStarted: true,
+                    currentQuestionIndex: prevState.currentQuestionIndex + 1,
+                    questions: updatedQuestionsForPrev
+                }),
+                this.updateFirebase
+            );
+        } else if (isTimedout) {
             this.setState({ examDone: true });
         }
     }
 
-    renderRadioButtons(uid, index, options) {
+    updateFirebase() {
+        const { firebase } = this.props;
+        const { authUser } = this.props;
+        const { email } = authUser;
+
+        const {
+            currentQuestionIndex,
+            questions,
+            examStarted,
+            examDone,
+            languageTaken
+        } = this.state;
+
+        firebase
+            .exam(email)
+            .update({
+                questions,
+                currentQuestionIndex,
+                examStarted,
+                examDone,
+                languageTaken
+            })
+            .then(() => {
+                if (currentQuestionIndex + 1 <= questions.length) {
+                    const conditionForNext = item =>
+                        item.qindex === currentQuestionIndex + 1;
+                    const updatedQuestions = updateQuestions(
+                        questions,
+                        conditionForNext,
+                        {
+                            tsStarted: this.getCurrentDateInTimestamp()
+                        }
+                    );
+                    this.setState({ questions: updatedQuestions });
+                } else {
+                    // this.setState({ examDone: true });
+                }
+            });
+    }
+
+    submitAnswer(index) {
+        const { currentQuestionIndex, questions } = this.state;
+        // can't stop the countdown callback without doing weird stuff, so here's a workaround
+        if (index && index !== currentQuestionIndex) return;
+
+        const indexToUse = index || currentQuestionIndex;
+
+        const condition = item => item.qindex === indexToUse;
+
+        const updatedQuestions = updateQuestions(questions, condition, {
+            tsAnswered: this.getCurrentDateInTimestamp()
+        });
+
+        const conditionNextQuestion = item =>
+            item.qindex === currentQuestionIndex + 1;
+
+        const updatedQuestionsForNext = updateQuestions(
+            updatedQuestions,
+            conditionNextQuestion,
+            {
+                tsStarted: this.getCurrentDateInTimestamp()
+            }
+        );
+
+        if (currentQuestionIndex === 10) {
+            this.setState(
+                {
+                    currentQuestionIndex: 10,
+                    examDone: true,
+                    questions: updatedQuestionsForNext
+                },
+                this.updateFirebase
+            );
+        } else {
+            this.setState(
+                prevState => ({
+                    currentQuestionIndex: prevState.currentQuestionIndex + 1,
+                    questions: updatedQuestionsForNext,
+                    currentQuestionAnswered: false
+                }),
+                this.updateFirebase
+            );
+        }
+    }
+
+    renderRadioButtons(qindex, index, options) {
         const radioButtons = ["A", "B", "C", "D", "E"].map(
             (option, optIndex) => {
-                const optionStrId = `${uid}-option${option}`;
-                const radioGroupId = `radio-group-${uid}`;
+                const optionStrId = `${qindex}-option${option}`;
+                const radioGroupId = `radio-group-${qindex}`;
                 return (
                     <div key={optionStrId}>
                         <Input
@@ -268,7 +382,6 @@ class JavascriptExamPage extends Component {
         const { questions, currentQuestionIndex } = this.state;
         const cardsOfQuestions = questions.map((question, index) => {
             const {
-                uid,
                 options,
                 qindex,
                 codeSnippet,
@@ -278,10 +391,11 @@ class JavascriptExamPage extends Component {
                 questionText,
                 answer
             } = question;
+            // const formattedAnswer = jsBeautify(answer);
 
             const radioButtons =
                 type === "mcq"
-                    ? this.renderRadioButtons(uid, index, options)
+                    ? this.renderRadioButtons(qindex, index, options)
                     : null;
 
             return (
@@ -298,7 +412,7 @@ class JavascriptExamPage extends Component {
                                 <Countdown
                                     date={
                                         new Date(
-                                            tsStarted.getTime() +
+                                            tsStarted.toDate().getTime() +
                                                 duration * 1000
                                         )
                                     }
@@ -316,7 +430,7 @@ class JavascriptExamPage extends Component {
                             {codeSnippet && (
                                 <CardBody>
                                     <Highlighter
-                                        id={uid}
+                                        id={`highlighter${qindex}`}
                                         theme="default"
                                         value={codeSnippet}
                                         language="javascript"
@@ -362,11 +476,23 @@ class JavascriptExamPage extends Component {
     }
 
     render() {
-        const { currentQuestionAnswered, examDone, examStarted } = this.state;
+        const {
+            currentQuestionAnswered,
+            examDone,
+            examStarted,
+            loading,
+            isError
+        } = this.state;
+
         return (
             <Container>
                 <Row>
-                    {!examStarted && (
+                    {loading && (
+                        <Col lg={{ size: 6, offset: 3 }}>
+                            <GrowingSpinner />
+                        </Col>
+                    )}
+                    {!loading && !examStarted && (
                         <Col lg={{ size: 6, offset: 3 }}>
                             <Card>
                                 <CardHeader className="text-white bg-warning">
@@ -408,13 +534,18 @@ class JavascriptExamPage extends Component {
                             <Button
                                 className="mt-4 bg-primary"
                                 block
-                                onClick={() => this.initializeExam()}
+                                onClick={() => this.generateExam()}
                             >
                                 I am READY!
                             </Button>
+                            {isError && (
+                                <Alert className="mt-2" color="danger">
+                                    {isError}
+                                </Alert>
+                            )}
                         </Col>
                     )}
-                    {examStarted && !examDone && (
+                    {!loading && examStarted && !examDone && (
                         <Col lg={{ size: 8, offset: 2 }}>
                             {this.renderQuestions()}
                             <Button
@@ -427,7 +558,7 @@ class JavascriptExamPage extends Component {
                             </Button>
                         </Col>
                     )}
-                    {examStarted && examDone && (
+                    {!loading && examStarted && examDone && (
                         <Col lg={{ size: 4, offset: 4 }}>
                             <Card color="success" inverse>
                                 <CardHeader>

@@ -19,6 +19,7 @@ class Firebase {
         this.auth = app.auth();
         this.db = app.firestore();
         this.functions = app.functions();
+        this.Timestamp = app.firestore.Timestamp;
     }
 
     onAuthUserListener = (next, fallback) => {
@@ -81,9 +82,13 @@ class Firebase {
 
     candidateStatus = email => this.db.collection("candidatestatus").doc(email);
 
+    exam = email => this.db.collection("exams").doc(email);
+
     // google cloud functions
 
     saveProfile = () => this.functions.httpsCallable("saveProfile");
+
+    generateExam = () => this.functions.httpsCallable("generateExam");
 }
 
 export default Firebase;

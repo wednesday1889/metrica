@@ -3,6 +3,7 @@ import { compose } from "recompose";
 import { withRouter } from "react-router-dom";
 
 import {
+    Container,
     Row,
     Col,
     Form,
@@ -10,26 +11,39 @@ import {
     Input,
     Label,
     Button,
-    Alert
+    Alert,
+    CardBody,
+    CardHeader,
+    Card
 } from "reactstrap";
 
 import { AuthUserContext, withAuthorization } from "../Session";
 import { withFirebase } from "../Firebase";
 import * as ROUTES from "../../constants/routes";
+import { CenteredSpinner } from "../CenteredSpinner";
 
 const AccountPage = props => (
     <AuthUserContext.Consumer>
         {authUser => (
-            <Row>
-                <Col sm={{ size: 8, offset: 4 }}>
-                    <h2>My Profile</h2>
-                    <AccountForm
-                        authUser={authUser}
-                        firebase={props.firebase}
-                        history={props.history}
-                    />
-                </Col>
-            </Row>
+            <Container>
+                <Row>
+                    <Col
+                        lg={{ size: 6, offset: 3 }}
+                        md={{ size: 6, offset: 3 }}
+                    >
+                        <Card>
+                            <CardHeader>My Profile</CardHeader>
+                            <CardBody>
+                                <AccountForm
+                                    authUser={authUser}
+                                    firebase={props.firebase}
+                                    history={props.history}
+                                />
+                            </CardBody>
+                        </Card>
+                    </Col>
+                </Row>
+            </Container>
         )}
     </AuthUserContext.Consumer>
 );
@@ -71,7 +85,7 @@ class AccountForm extends Component {
         const { firebase, history } = this.props;
 
         const saveProfileFunc = firebase.saveProfile();
-
+        this.setState({ loading: true });
         saveProfileFunc({
             email,
             firstName,
@@ -79,9 +93,11 @@ class AccountForm extends Component {
             examCode
         })
             .then(() => {
+                this.setState({ loading: false });
                 history.push(ROUTES.HOME);
             })
             .catch(error => {
+                this.setState({ loading: false });
                 this.setState({ isError: error.details.message });
             });
 
@@ -103,7 +119,7 @@ class AccountForm extends Component {
         } = this.state;
 
         if (loading) {
-            return <h1>loading</h1>;
+            return <CenteredSpinner />;
         }
 
         const isInvalid =
@@ -113,53 +129,51 @@ class AccountForm extends Component {
             examCode === "";
         return (
             <Form className="form" onSubmit={this.onSubmit}>
-                <Col sm={5}>
-                    <FormGroup>
-                        <Label>Email</Label>
-                        <Input
-                            type="email"
-                            name="email"
-                            id="email"
-                            value={email}
-                            readOnly
-                        />
-                        <Label>First Name</Label>
-                        <Input
-                            name="firstName"
-                            id="firstName"
-                            value={firstName}
-                            onChange={this.onChange}
-                            type="text"
-                            placeholder="Your First Name"
-                        />
-                        <Label>Last Name</Label>
-                        <Input
-                            name="lastName"
-                            id="lastName"
-                            value={lastName}
-                            onChange={this.onChange}
-                            type="text"
-                            placeholder="Your Last Name"
-                        />
-                        <Label>Exam Code</Label>
-                        <Input
-                            name="examCode"
-                            id="examCode"
-                            value={examCode}
-                            onChange={this.onChange}
-                            type="text"
-                            placeholder="Your Exam Code"
-                        />
-                    </FormGroup>
-                    <Button disabled={isInvalid} type="submit" block>
-                        Update Profile
-                    </Button>
-                    {isError && (
-                        <Alert className="mt-2" color="danger">
-                            {isError}
-                        </Alert>
-                    )}
-                </Col>
+                <FormGroup>
+                    <Label>Email</Label>
+                    <Input
+                        type="email"
+                        name="email"
+                        id="email"
+                        value={email}
+                        readOnly
+                    />
+                    <Label>First Name</Label>
+                    <Input
+                        name="firstName"
+                        id="firstName"
+                        value={firstName}
+                        onChange={this.onChange}
+                        type="text"
+                        placeholder="Your First Name"
+                    />
+                    <Label>Last Name</Label>
+                    <Input
+                        name="lastName"
+                        id="lastName"
+                        value={lastName}
+                        onChange={this.onChange}
+                        type="text"
+                        placeholder="Your Last Name"
+                    />
+                    <Label>Exam Code</Label>
+                    <Input
+                        name="examCode"
+                        id="examCode"
+                        value={examCode}
+                        onChange={this.onChange}
+                        type="text"
+                        placeholder="Your Exam Code"
+                    />
+                </FormGroup>
+                <Button disabled={isInvalid} type="submit" block>
+                    Update Profile
+                </Button>
+                {isError && (
+                    <Alert className="mt-2" color="danger">
+                        {isError}
+                    </Alert>
+                )}
             </Form>
         );
     }

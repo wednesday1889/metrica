@@ -10,6 +10,7 @@ import IncompleteProfileCard from "./incompleteProfile";
 import CompleteProfileCard from "./completeProfile";
 import JavascriptExamCard from "./javascriptCard";
 import JavaExamCard from "./javaCard";
+import { GrowingSpinner } from "../CenteredSpinner";
 
 class HomePage extends Component {
     constructor(props) {
@@ -80,11 +81,7 @@ class HomePage extends Component {
                         </Row>
                     </div>
                 )}
-                {loading && (
-                    <div>
-                        <h1>Loading</h1>
-                    </div>
-                )}
+                {loading && <GrowingSpinner />}
             </Container>
         );
     }

@@ -20,7 +20,8 @@ class HomePage extends Component {
             loading: true,
             email: "",
             firstName: "",
-            profileDone: false
+            profileDone: false,
+            languageTaken: ""
         };
     }
 
@@ -54,7 +55,17 @@ class HomePage extends Component {
     }
 
     render() {
-        const { email, firstName, loading, profileDone } = this.state;
+        const {
+            email,
+            firstName,
+            loading,
+            profileDone,
+            languageTaken
+        } = this.state;
+
+        const isLanguageJS = languageTaken === "" || languageTaken === "js";
+        const isLanguageJava = languageTaken === "" || languageTaken === "java";
+
         return (
             <Container>
                 {!loading && !profileDone && (
@@ -72,10 +83,23 @@ class HomePage extends Component {
                             </Col>
                         </Row>
                         <Row>
-                            <Col lg={{ size: 4, offset: 2 }} md={{ size: 6 }}>
-                                <JavascriptExamCard />
-                            </Col>
-                            <Col lg={{ size: 4 }} md={{ size: 6 }}>
+                            {isLanguageJS && (
+                                <Col
+                                    lg={{ size: 4, offset: 2 }}
+                                    md={{ size: 6 }}
+                                >
+                                    <JavascriptExamCard />
+                                </Col>
+                            )}
+
+                            <Col
+                                lg={{
+                                    size: 4,
+                                    offset:
+                                        !isLanguageJS && isLanguageJava ? 2 : 0
+                                }}
+                                md={{ size: 6 }}
+                            >
                                 <JavaExamCard />
                             </Col>
                         </Row>

@@ -42,7 +42,7 @@ const INITIAL_STATE = {
             answer: "",
             tsStarted: "",
             tsAnswered: "",
-            duration: 10,
+            duration: 50,
             type: "mcq"
         },
         {
@@ -126,7 +126,8 @@ const INITIAL_STATE = {
     ],
     currentQuestionIndex: 1,
     examStarted: false,
-    examDone: false
+    examDone: false,
+    languageTaken: ""
 };
 const countdownRenderer = ({ minutes, seconds }) => {
     // Render a countdown
@@ -150,28 +151,7 @@ class JavascriptExamPage extends Component {
         };
     }
 
-    componentDidMount() {
-        const { currentQuestionIndex } = this.state;
-        if (currentQuestionIndex === 1) {
-            this.setState(state => {
-                const questions = state.questions.map(item => {
-                    const condition = currItem =>
-                        currItem.qindex === currentQuestionIndex &&
-                        !currItem.tsStarted;
-
-                    if (condition(item)) {
-                        const updatedItem = Object.assign({}, item);
-                        updatedItem.tsStarted = new Date();
-                        return updatedItem;
-                    }
-                    return item;
-                });
-                return {
-                    questions
-                };
-            });
-        }
-    }
+    componentDidMount() {}
 
     componentDidUpdate() {}
 
@@ -208,6 +188,30 @@ class JavascriptExamPage extends Component {
                 questions
             };
         });
+    }
+
+    initializeExam() {
+        const { currentQuestionIndex } = this.state;
+        this.setState({ examStarted: true });
+        if (currentQuestionIndex === 1) {
+            this.setState(state => {
+                const questions = state.questions.map(item => {
+                    const condition = currItem =>
+                        currItem.qindex === currentQuestionIndex &&
+                        !currItem.tsStarted;
+
+                    if (condition(item)) {
+                        const updatedItem = Object.assign({}, item);
+                        updatedItem.tsStarted = new Date();
+                        return updatedItem;
+                    }
+                    return item;
+                });
+                return {
+                    questions
+                };
+            });
+        }
     }
 
     submitAnswer(index) {
@@ -365,10 +369,7 @@ class JavascriptExamPage extends Component {
                     {!examStarted && (
                         <Col lg={{ size: 6, offset: 3 }}>
                             <Card>
-                                <CardHeader
-                                    className="text-white bg-warning"
-                                    inverse
-                                >
+                                <CardHeader className="text-white bg-warning">
                                     <strong>
                                         Exam Guidelines - Please read ME!
                                     </strong>
@@ -407,9 +408,7 @@ class JavascriptExamPage extends Component {
                             <Button
                                 className="mt-4 bg-primary"
                                 block
-                                onClick={() =>
-                                    this.setState({ examStarted: true })
-                                }
+                                onClick={() => this.initializeExam()}
                             >
                                 I am READY!
                             </Button>

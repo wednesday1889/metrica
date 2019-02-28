@@ -71,7 +71,13 @@ class Firebase {
 
     doSignOut = () => this.auth.signOut();
 
-    doPasswordReset = email => this.auth.sendPasswordResetEmail(email);
+    doPasswordReset = email => {
+        // TODO: How do i get this dynamically?
+        const actionCodeSettings = {
+            url: "http://onlineassessment-4343b.firebaseapp.com/home?"
+        };
+        return this.auth.sendPasswordResetEmail(email, actionCodeSettings);
+    };
 
     doPasswordUpdate = password =>
         this.auth.currentUser.updatePassword(password);

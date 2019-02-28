@@ -1,4 +1,2 @@
-const ADMIN = "ADMIN";
-const RECRUITER = "RECRUITER";
-
-export { ADMIN, RECRUITER };
+export const ADMIN = "ADMIN";
+export const RECRUITER = "RECRUITER";

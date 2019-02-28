@@ -17,6 +17,7 @@ import {
 
 import SignOutButton from "../SignOut";
 import * as ROUTES from "../../constants/routes";
+import * as ROLES from "../../constants/roles";
 import { AuthUserContext } from "../Session";
 
 const Navigation = () => (
@@ -47,6 +48,12 @@ class NavigationAuth extends Component {
     render() {
         const { isOpen } = this.state;
         const { authUser } = this.props;
+
+        const isRecruiter = authUser
+            ? authUser.roles.includes(ROLES.RECRUITER)
+            : false;
+        const isAdmin = authUser ? authUser.roles.includes(ROLES.ADMIN) : false;
+
         return (
             <Navbar color="faded" light expand="md">
                 <NavbarBrand
@@ -60,11 +67,30 @@ class NavigationAuth extends Component {
                 <Collapse isOpen={isOpen} navbar>
                     {authUser && (
                         <Nav className="ml-auto" navbar>
-                            <NavItem>
-                                <NavLink tag={Link} to={ROUTES.HOME}>
-                                    Home
-                                </NavLink>
-                            </NavItem>
+                            {!isRecruiter && !isAdmin && (
+                                <NavItem>
+                                    <NavLink tag={Link} to={ROUTES.HOME}>
+                                        Home
+                                    </NavLink>
+                                </NavItem>
+                            )}
+                            {isRecruiter && (
+                                <NavItem>
+                                    <NavLink
+                                        tag={Link}
+                                        to={ROUTES.RECRUITER_HOME}
+                                    >
+                                        Recruiter Home
+                                    </NavLink>
+                                </NavItem>
+                            )}
+                            {isAdmin && (
+                                <NavItem>
+                                    <NavLink tag={Link} to={ROUTES.ADMIN}>
+                                        Admin Home
+                                    </NavLink>
+                                </NavItem>
+                            )}
                             <UncontrolledDropdown nav inNavbar>
                                 <DropdownToggle nav caret>
                                     Account

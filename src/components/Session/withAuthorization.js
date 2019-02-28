@@ -5,6 +5,7 @@ import { compose } from "recompose";
 import AuthUserContext from "./context";
 import { withFirebase } from "../Firebase";
 import * as ROUTES from "../../constants/routes";
+import * as ROLES from "../../constants/roles";
 
 const withAuthorization = condition => Component => {
     class WithAuthorization extends React.Component {
@@ -15,6 +16,12 @@ const withAuthorization = condition => Component => {
                     if (!condition(authUser)) {
                         // since authUser is not null, then user is probably not profileDone yet. Go back to HOME
                         history.push(ROUTES.HOME);
+                    } else if (authUser.roles.includes(ROLES.RECRUITER)) {
+                        // TODO: Probably doesn't belong here
+                        history.push(ROUTES.RECRUITER_HOME);
+                    } else if (authUser.roles.includes(ROLES.ADMIN)) {
+                        // TODO: Probably doesn't belong here
+                        history.push(ROUTES.ADMIN);
                     }
                 },
                 () => history.push(ROUTES.SIGN_IN)

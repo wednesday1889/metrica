@@ -12,6 +12,8 @@ import JavascriptExamCard from "./javascriptCard";
 import JavaExamCard from "./javaCard";
 import { GrowingSpinner } from "../CenteredSpinner";
 
+import * as ROLES from "../../constants/roles";
+
 class HomePage extends Component {
     constructor(props) {
         super(props);
@@ -111,7 +113,10 @@ class HomePage extends Component {
     }
 }
 
-const condition = authUser => !!authUser;
+const condition = authUser =>
+    !!authUser &&
+    (authUser.roles.includes(ROLES.ADMIN) ||
+        authUser.roles.includes(ROLES.RECRUITER));
 
 export default compose(
     withFirebase,

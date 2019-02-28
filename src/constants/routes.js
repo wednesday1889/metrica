@@ -6,3 +6,4 @@ export const ACCOUNT = "/account";
 export const ADMIN = "/admin";
 export const PASSWORD_FORGET = "/pw-forget";
 export const EXAM_JS_LANDING = "/jsexam";
+export const RECRUITER_HOME = "/recruiter";

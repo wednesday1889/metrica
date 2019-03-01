@@ -78,7 +78,7 @@ class HomePage extends Component {
                         </Col>
                     </Row>
                 )}
-                {!loading && screeningStatus === 2 && (
+                {!loading && (screeningStatus === 2 || screeningStatus === 3) && (
                     <div>
                         <Row>
                             <Col lg={{ size: 8, offset: 2 }}>
@@ -108,7 +108,10 @@ class HomePage extends Component {
                         </Row>
                     </div>
                 )}
-                {!loading && screeningStatus !== 1 && screeningStatus !== 2 && (
+                {!loading &&
+                    screeningStatus !== 1 &&
+                    screeningStatus !== 2 &&
+                    screeningStatus !== 3 && (
                     <Row>
                         <Col md={{ size: 8, offset: 2 }}>
                             <ExamCompleteCard />

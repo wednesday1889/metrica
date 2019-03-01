@@ -34,6 +34,7 @@ import { GrowingSpinner } from "../CenteredSpinner";
 import ExamCompleteCard from "./examCompleteCard";
 import { AuthUserContext, withAuthorization } from "../Session";
 import { withFirebase } from "../Firebase";
+// import * as SCREENINGSTATUS from "../../constants/screeningStatus";
 
 const INITIAL_STATE = {
     questions: [],
@@ -578,7 +579,9 @@ class JavascriptComponent extends Component {
     }
 }
 
-const condition = authUser => !!authUser && authUser.screeningStatus === 2;
+const condition = authUser =>
+    !!authUser &&
+    (authUser.screeningStatus === 2 || authUser.screeningStatus === 3);
 
 export default compose(
     withFirebase,

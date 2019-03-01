@@ -17,6 +17,44 @@ const INITIAL_STATE = {
     candidates: []
 };
 
+const renderBadge = screeningStatus => {
+    let badgeColor;
+    let statusText;
+
+    switch (screeningStatus) {
+    case 1:
+        badgeColor = "primary";
+        statusText = "Registered";
+        break;
+    case 2:
+        badgeColor = "primary";
+        statusText = "Ready to take Exam";
+        break;
+    case 3:
+        badgeColor = "info";
+        statusText = "Exam Started";
+        break;
+    case 4:
+        badgeColor = "warning";
+        statusText = "For Assessment";
+        break;
+    case 5:
+        badgeColor = "success";
+        statusText = "Passed";
+        break;
+    case 6:
+        badgeColor = "danger";
+        statusText = "Failed";
+        break;
+    default:
+        badgeColor = "secondary";
+        statusText = "Not Registered";
+        break;
+    }
+
+    return <Badge color={badgeColor}>{statusText}</Badge>;
+};
+
 class RecruiterPage extends Component {
     constructor(props) {
         super(props);
@@ -29,11 +67,15 @@ class RecruiterPage extends Component {
         const { firebase } = this.props;
 
         this.unsubscribeCandidates = firebase
-            .candidates()
+            .allCandidateStatus()
             .onSnapshot(querySnapshot => {
                 const candidates = [];
                 querySnapshot.forEach(doc => {
-                    candidates.push(doc.data());
+                    const candidateStatus = doc.data();
+                    candidates.push({
+                        email: doc.id,
+                        ...candidateStatus
+                    });
                     this.setState({ candidates });
                 });
             });
@@ -51,7 +93,7 @@ class RecruiterPage extends Component {
             return (
                 <ListGroupItem className="d-inline-flex justify-content-between align-items-center">
                     {candidate.lastName}, {candidate.firstName}
-                    <Badge color="success">Passed</Badge>
+                    {renderBadge(candidate.screeningStatus)}
                 </ListGroupItem>
             );
         });

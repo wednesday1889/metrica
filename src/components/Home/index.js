@@ -11,6 +11,7 @@ import CompleteProfileCard from "./completeProfile";
 import JavascriptExamCard from "./javascriptCard";
 import JavaExamCard from "./javaCard";
 import { GrowingSpinner } from "../CenteredSpinner";
+import ExamCompleteCard from "../JavascriptExam/examCompleteCard";
 
 import * as ROLES from "../../constants/roles";
 
@@ -106,6 +107,13 @@ class HomePage extends Component {
                             </Col>
                         </Row>
                     </div>
+                )}
+                {!loading && screeningStatus !== 1 && screeningStatus !== 2 && (
+                    <Row>
+                        <Col md={{ size: 8, offset: 2 }}>
+                            <ExamCompleteCard />
+                        </Col>
+                    </Row>
                 )}
                 {loading && <GrowingSpinner />}
             </Container>

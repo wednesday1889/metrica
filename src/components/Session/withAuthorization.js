@@ -13,7 +13,11 @@ const withAuthorization = condition => Component => {
             const { firebase, history } = this.props;
             this.listener = firebase.onAuthUserListener(
                 authUser => {
-                    if (!condition(authUser)) {
+                    if (
+                        !condition(authUser) &&
+                        !authUser.roles.includes(ROLES.RECRUITER) &&
+                        !authUser.roles.includes(ROLES.ADMIN)
+                    ) {
                         // since authUser is not null, then user is probably not screeningStatus===2 yet. Go back to HOME
                         history.push(ROUTES.HOME);
                     } else if (authUser.roles.includes(ROLES.RECRUITER)) {

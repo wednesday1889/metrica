@@ -92,6 +92,8 @@ class Firebase {
             .where("roles", "array-contains", "CANDIDATE")
             .limit(50);
 
+    allCandidateStatus = () => this.db.collection("candidatestatus").limit(50);
+
     candidateStatus = email => this.db.collection("candidatestatus").doc(email);
 
     exam = email => this.db.collection("exams").doc(email);

@@ -14,7 +14,7 @@ const withAuthorization = condition => Component => {
             this.listener = firebase.onAuthUserListener(
                 authUser => {
                     if (!condition(authUser)) {
-                        // since authUser is not null, then user is probably not profileDone yet. Go back to HOME
+                        // since authUser is not null, then user is probably not screeningStatus===2 yet. Go back to HOME
                         history.push(ROUTES.HOME);
                     } else if (authUser.roles.includes(ROLES.RECRUITER)) {
                         // TODO: Probably doesn't belong here

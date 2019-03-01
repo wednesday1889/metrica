@@ -20,6 +20,7 @@ import {
 
 import { withFirebase } from "../Firebase";
 import * as ROUTES from "../../constants/routes";
+import * as ROLES from "../../constants/roles";
 
 const SignUpPage = () => (
     <Container>
@@ -71,10 +72,9 @@ class SignUpFormBase extends Component {
                         email: auth.user.email,
                         firstName: "",
                         lastName: "",
-                        profileDone: false,
                         examCode: "",
                         dateCreated: new Date(),
-                        roles: []
+                        roles: [ROLES.CANDIDATE]
                     });
                 this.setState({ ...INITIAL_STATE });
                 history.push(ROUTES.ACCOUNT);

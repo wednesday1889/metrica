@@ -591,7 +591,7 @@ class JavascriptComponent extends Component {
     }
 }
 
-const condition = authUser => !!authUser && authUser.profileDone;
+const condition = authUser => !!authUser && authUser.screeningStatus === 2;
 
 export default compose(
     withFirebase,

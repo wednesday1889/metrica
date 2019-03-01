@@ -22,7 +22,7 @@ class HomePage extends Component {
             loading: true,
             email: "",
             firstName: "",
-            profileDone: false,
+            screeningStatus: 0,
             languageTaken: ""
         };
     }
@@ -61,7 +61,7 @@ class HomePage extends Component {
             email,
             firstName,
             loading,
-            profileDone,
+            screeningStatus,
             languageTaken
         } = this.state;
 
@@ -70,14 +70,14 @@ class HomePage extends Component {
 
         return (
             <Container>
-                {!loading && !profileDone && (
+                {!loading && screeningStatus === 1 && (
                     <Row>
                         <Col md={{ size: 8, offset: 2 }}>
                             <IncompleteProfileCard email={email} />
                         </Col>
                     </Row>
                 )}
-                {!loading && profileDone && (
+                {!loading && screeningStatus === 2 && (
                     <div>
                         <Row>
                             <Col lg={{ size: 8, offset: 2 }}>
@@ -115,8 +115,8 @@ class HomePage extends Component {
 
 const condition = authUser =>
     !!authUser &&
-    (authUser.roles.includes(ROLES.ADMIN) ||
-        authUser.roles.includes(ROLES.RECRUITER));
+    !authUser.roles.includes(ROLES.ADMIN) &&
+    !authUser.roles.includes(ROLES.RECRUITER);
 
 export default compose(
     withFirebase,

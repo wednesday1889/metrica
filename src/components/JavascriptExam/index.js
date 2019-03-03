@@ -59,7 +59,6 @@ const countdownRenderer = ({ minutes, seconds }) => {
 };
 
 const beautify = str => {
-    // const cleanedCommentsStr = str.replace(/\*\//g, "*/\n");
     const options = {
         indent_size: "4",
         indent_char: " ",
@@ -80,7 +79,12 @@ const beautify = str => {
     };
 
     return jsBeautify(
-        str.replace(/\*\//g, "*/\n").replace(/\/\*/g, "\n/*"),
+        // str.replace(/\*\//g, "*/\n").replace(/\/\*/g, "\n/*"),
+        str
+            .replace(/\*\/ +\/\*/g, "*/\n/*")
+            .replace(/} +\/\*/g, "}\n/*")
+            .replace(/\*\/ +}/g, "*/\n}"),
+        // str,
         options
     );
 };

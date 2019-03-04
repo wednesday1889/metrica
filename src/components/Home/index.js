@@ -14,6 +14,7 @@ import { GrowingSpinner } from "../CenteredSpinner";
 import ExamCompleteCard from "../JavascriptExam/examCompleteCard";
 
 import * as ROLES from "../../constants/roles";
+import * as SCREENINGSTATUS from "../../constants/screeningStatus";
 
 class HomePage extends Component {
     constructor(props) {
@@ -71,18 +72,26 @@ class HomePage extends Component {
 
         return (
             <Container>
-                {!loading && screeningStatus === 1 && (
+                {!loading &&
+                    (screeningStatus === SCREENINGSTATUS.REGISTERED ||
+                        screeningStatus === SCREENINGSTATUS.NOT_REGISTERED) && (
+                // eslint-disable-next-line react/jsx-indent
                     <Row>
                         <Col md={{ size: 8, offset: 2 }}>
                             <IncompleteProfileCard email={email} />
                         </Col>
                     </Row>
                 )}
-                {!loading && (screeningStatus === 2 || screeningStatus === 3) && (
-                    <div>
+                {!loading &&
+                    (screeningStatus === SCREENINGSTATUS.READY_TO_TAKE_EXAM ||
+                        screeningStatus === SCREENINGSTATUS.EXAM_STARTED) && (
+                // eslint-disable-next-line react/jsx-indent
+                    <React.Fragment>
                         <Row>
                             <Col lg={{ size: 8, offset: 2 }}>
-                                <CompleteProfileCard firstName={firstName} />
+                                <CompleteProfileCard
+                                    firstName={firstName}
+                                />
                             </Col>
                         </Row>
                         <Row>
@@ -99,14 +108,16 @@ class HomePage extends Component {
                                 lg={{
                                     size: 4,
                                     offset:
-                                        !isLanguageJS && isLanguageJava ? 2 : 0
+                                            !isLanguageJS && isLanguageJava
+                                                ? 2
+                                                : 0
                                 }}
                                 md={{ size: 6 }}
                             >
                                 <JavaExamCard />
                             </Col>
                         </Row>
-                    </div>
+                    </React.Fragment>
                 )}
                 {!loading &&
                     screeningStatus !== 1 &&

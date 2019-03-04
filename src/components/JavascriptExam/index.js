@@ -31,8 +31,13 @@ import { Controlled as CodeMirror2 } from "react-codemirror2";
 import Countdown from "react-countdown-now";
 
 import { GrowingSpinner } from "../CenteredSpinner";
+import IncompleteProfileCard from "../Home/incompleteProfile";
 import ExamCompleteCard from "./examCompleteCard";
-import { AuthUserContext, withAuthorization } from "../Session";
+import {
+    AuthUserContext,
+    withAuthorization,
+    withAuthentication
+} from "../Session";
 import { withFirebase } from "../Firebase";
 // import * as SCREENINGSTATUS from "../../constants/screeningStatus";
 
@@ -44,7 +49,8 @@ const INITIAL_STATE = {
     languageTaken: "js",
     loading: false,
     isError: "",
-    currentQuestionAnswered: false
+    currentQuestionAnswered: false,
+    screeningStatus: 0
 };
 const countdownRenderer = ({ minutes, seconds }) => {
     // Render a countdown
@@ -124,11 +130,20 @@ class JavascriptComponent extends Component {
         };
     }
 
-    componentDidUpdate() {}
-
-    componentWillUnmount() {
-        if (this.unsubscribe) this.unsubscribe();
+    componentDidMount() {
+        const { authUser, firebase } = this.props;
+        firebase
+            .candidateStatus(authUser.email)
+            .get()
+            .then(candDoc => {
+                const candidateStatus = candDoc.data();
+                this.setState({
+                    ...candidateStatus
+                });
+            });
     }
+
+    componentWillUnmount() {}
 
     onUpdateAnswer = value => {
         const { currentQuestionIndex, questions } = this.state;
@@ -497,7 +512,8 @@ class JavascriptComponent extends Component {
             examDone,
             examStarted,
             loading,
-            isError
+            isError,
+            screeningStatus
         } = this.state;
 
         return (
@@ -508,41 +524,49 @@ class JavascriptComponent extends Component {
                             <GrowingSpinner />
                         </Col>
                     )}
-                    {!loading && !examStarted && (
+                    {!loading &&
+                        (screeningStatus === 0 || screeningStatus === 1) && (
+                        <Col lg={{ size: 6, offset: 3 }}>
+                            <IncompleteProfileCard />
+                        </Col>
+                    )}
+                    {!loading &&
+                        (screeningStatus === 2 || screeningStatus === 3) && (
                         <Col lg={{ size: 6, offset: 3 }}>
                             <Card>
                                 <CardHeader className="text-white bg-warning">
                                     <strong>
-                                        Exam Guidelines - Please read ME!
+                                            Exam Guidelines - Please read ME!
                                     </strong>
                                 </CardHeader>
                                 <CardText className="pl-4 pt-2 pb-2 pr-4">
-                                    The duration for this exam is around 30
-                                    minutes.
+                                        The duration for this exam is around 30
+                                        minutes.
                                     <br />
                                     <br />
-                                    Each question is timed, once the timer is up
-                                    you will be moved to the next question with
-                                    the current question being set to
-                                    unanswered. You can&apos;t go back to a
-                                    previous question.
+                                        Each question is timed, once the timer
+                                        is up you will be moved to the next
+                                        question with the current question being
+                                        set to unanswered. You can&apos;t go
+                                        back to a previous question.
                                     <br />
                                     <br />
-                                    This exam contains multiple choice questions
-                                    and programming challenges
+                                        This exam contains multiple choice
+                                        questions and programming challenges
                                     <br />
                                     <br />
-                                    Please make sure you have a stable internet
-                                    connection while taking this assessment.
+                                        Please make sure you have a stable
+                                        internet connection while taking this
+                                        assessment.
                                     <br />
                                     <br />
                                     <i>
                                         <strong>
-                                            For the programming challenges,
-                                            don&apos;t worry too much on syntax.
-                                            We just want to see your basic
-                                            programming knowledge and problem
-                                            solving skills
+                                                For the programming challenges,
+                                                don&apos;t worry too much on
+                                                syntax. We just want to see your
+                                                basic programming knowledge and
+                                                problem solving skills
                                         </strong>
                                     </i>
                                 </CardText>
@@ -552,7 +576,7 @@ class JavascriptComponent extends Component {
                                 block
                                 onClick={() => this.generateExam()}
                             >
-                                I am READY!
+                                    I am READY!
                             </Button>
                             {isError && (
                                 <Alert className="mt-2" color="danger">
@@ -583,11 +607,10 @@ class JavascriptComponent extends Component {
     }
 }
 
-const condition = authUser =>
-    !!authUser &&
-    (authUser.screeningStatus === 2 || authUser.screeningStatus === 3);
+const condition = authUser => !!authUser;
 
 export default compose(
     withFirebase,
+    withAuthentication,
     withAuthorization(condition)
 )(JavascriptExamPage);

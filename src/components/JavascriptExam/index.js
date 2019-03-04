@@ -561,7 +561,7 @@ class JavascriptComponent extends Component {
                                     <br />
                                     <br />
                                     This exam contains multiple choice questions
-                                    and programming challenges
+                                    and programming challenges.
                                     <br />
                                     <br />
                                     Please make sure you have a stable internet
@@ -574,7 +574,9 @@ class JavascriptComponent extends Component {
                                             don&apos;t worry too much on syntax.
                                             We just want to see your basic
                                             programming knowledge and problem
-                                            solving skills
+                                            solving skills. Copy+Paste is
+                                            currently disabled. Please type your
+                                            answers directly in the code editor.
                                         </strong>
                                     </i>
                                 </CardText>
@@ -606,7 +608,11 @@ class JavascriptComponent extends Component {
                             </Button>
                         </Col>
                     )}
-                    {!loading && (examDone || done) && <ExamCompleteCard />}
+                    {!loading && (examDone || done) && (
+                        <Col lg={{ size: 8, offset: 2 }}>
+                            <ExamCompleteCard />
+                        </Col>
+                    )}
                 </Row>
             </Container>
         );

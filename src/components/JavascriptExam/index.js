@@ -39,6 +39,7 @@ import {
     withAuthentication
 } from "../Session";
 import { withFirebase } from "../Firebase";
+import * as SCREENINGSTATUS from "../../constants/screeningStatus";
 // import * as SCREENINGSTATUS from "../../constants/screeningStatus";
 
 const INITIAL_STATE = {
@@ -203,7 +204,6 @@ class JavascriptComponent extends Component {
     startListeningToFirebaseExam() {
         const { firebase, authUser } = this.props;
         const { email } = authUser;
-
         this.setState({ loading: true });
         firebase
             .exam(email)
@@ -516,6 +516,17 @@ class JavascriptComponent extends Component {
             screeningStatus
         } = this.state;
 
+        const incomplete =
+            screeningStatus === SCREENINGSTATUS.NOT_REGISTERED ||
+            screeningStatus === SCREENINGSTATUS.REGISTERED;
+        const ongoing =
+            screeningStatus === SCREENINGSTATUS.READY_TO_TAKE_EXAM ||
+            screeningStatus === SCREENINGSTATUS.EXAM_STARTED;
+        const done =
+            screeningStatus === SCREENINGSTATUS.FOR_ASSESSMENT ||
+            screeningStatus === SCREENINGSTATUS.PASSED ||
+            screeningStatus === SCREENINGSTATUS.FAILED;
+
         return (
             <Container>
                 <Row>
@@ -524,49 +535,46 @@ class JavascriptComponent extends Component {
                             <GrowingSpinner />
                         </Col>
                     )}
-                    {!loading &&
-                        (screeningStatus === 0 || screeningStatus === 1) && (
+                    {!loading && incomplete && (
                         <Col lg={{ size: 6, offset: 3 }}>
                             <IncompleteProfileCard />
                         </Col>
                     )}
-                    {!loading &&
-                        (screeningStatus === 2 || screeningStatus === 3) && (
+                    {!loading && ongoing && !examStarted && (
                         <Col lg={{ size: 6, offset: 3 }}>
                             <Card>
                                 <CardHeader className="text-white bg-warning">
                                     <strong>
-                                            Exam Guidelines - Please read ME!
+                                        Exam Guidelines - Please read ME!
                                     </strong>
                                 </CardHeader>
                                 <CardText className="pl-4 pt-2 pb-2 pr-4">
-                                        The duration for this exam is around 30
-                                        minutes.
+                                    The duration for this exam is around 30
+                                    minutes.
                                     <br />
                                     <br />
-                                        Each question is timed, once the timer
-                                        is up you will be moved to the next
-                                        question with the current question being
-                                        set to unanswered. You can&apos;t go
-                                        back to a previous question.
+                                    Each question is timed, once the timer is up
+                                    you will be moved to the next question with
+                                    the current question being set to
+                                    unanswered. You can&apos;t go back to a
+                                    previous question.
                                     <br />
                                     <br />
-                                        This exam contains multiple choice
-                                        questions and programming challenges
+                                    This exam contains multiple choice questions
+                                    and programming challenges
                                     <br />
                                     <br />
-                                        Please make sure you have a stable
-                                        internet connection while taking this
-                                        assessment.
+                                    Please make sure you have a stable internet
+                                    connection while taking this assessment.
                                     <br />
                                     <br />
                                     <i>
                                         <strong>
-                                                For the programming challenges,
-                                                don&apos;t worry too much on
-                                                syntax. We just want to see your
-                                                basic programming knowledge and
-                                                problem solving skills
+                                            For the programming challenges,
+                                            don&apos;t worry too much on syntax.
+                                            We just want to see your basic
+                                            programming knowledge and problem
+                                            solving skills
                                         </strong>
                                     </i>
                                 </CardText>
@@ -576,7 +584,7 @@ class JavascriptComponent extends Component {
                                 block
                                 onClick={() => this.generateExam()}
                             >
-                                    I am READY!
+                                I am READY!
                             </Button>
                             {isError && (
                                 <Alert className="mt-2" color="danger">
@@ -598,9 +606,7 @@ class JavascriptComponent extends Component {
                             </Button>
                         </Col>
                     )}
-                    {!loading && examStarted && examDone && (
-                        <ExamCompleteCard />
-                    )}
+                    {!loading && (examDone || done) && <ExamCompleteCard />}
                 </Row>
             </Container>
         );

@@ -20,12 +20,18 @@ const withAuthorization = condition => Component => {
                     ) {
                         // since authUser is not null, then user is probably not screeningStatus===2 yet. Go back to HOME
                         history.push(ROUTES.HOME);
-                    } else if (authUser.roles.includes(ROLES.RECRUITER)) {
-                        // TODO: Probably doesn't belong here
-                        history.push(ROUTES.RECRUITER_HOME);
-                    } else if (authUser.roles.includes(ROLES.ADMIN)) {
+                    } else if (
+                        !condition(authUser) &&
+                        authUser.roles.includes(ROLES.ADMIN)
+                    ) {
                         // TODO: Probably doesn't belong here
                         history.push(ROUTES.ADMIN);
+                    } else if (
+                        !condition(authUser) &&
+                        authUser.roles.includes(ROLES.RECRUITER)
+                    ) {
+                        // TODO: Probably doesn't belong here
+                        history.push(ROUTES.RECRUITER_HOME);
                     }
                 },
                 () => history.push(ROUTES.SIGN_IN)

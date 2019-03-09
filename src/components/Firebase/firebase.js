@@ -94,6 +94,12 @@ class Firebase {
 
     allCandidateStatus = () => this.db.collection("candidatestatus").limit(50);
 
+    allCandidatesForScreening = () =>
+        this.db
+            .collection("candidatestatus")
+            .where("screeningStatus", "==", 4)
+            .limit(50);
+
     candidateStatus = email => this.db.collection("candidatestatus").doc(email);
 
     exam = email => this.db.collection("exams").doc(email);
